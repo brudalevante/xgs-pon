@@ -1,10 +1,10 @@
 # bpi-r4-openwrt-builder
  
- >git clone ht<span>tps://github.com/woziwrt/bpi-r4-openwrt-builder.git
+ >git clone ht<span>tps://github.com/brudalevante/brudalevante-openwrt-banana-pi-r4.git
  
- >chmod 776 -R bpi-r4-openwrt-builder
+ >chmod 776 -R brudalevante-openwrt-banana-pi-r4
  
- >cd bpi-r4-openwrt-builder
+ >cd brudalevante-openwrt-banana-pi-r4
  
  BEFORE RUNNING BUILDER READ ALL COMMENTS IN THE SCRIPT !
  
