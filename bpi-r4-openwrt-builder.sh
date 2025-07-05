@@ -31,10 +31,18 @@ cp -rf configs/dbg_defconfig_crypto mtk-openwrt-feeds/autobuild/unified/filogic/
 cp -rf my_files/w-rules mtk-openwrt-feeds/autobuild/unified/filogic/rules
 rm -f mtk-openwrt-feeds/24.10/patches-feeds/108-strongswan-add-uci-support.patch
 
-# 4. Copiar parches personalizados
+# 4. Copiar parches y archivos personalizados a MTK feeds
 cp -rf my_files/200-wozi-libiwinfo-fix_noise_reading_for_radios.patch openwrt/package/network/utils/iwinfo/patches
 cp -rf my_files/99999_tx_power_check_by_dan_pawlik.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/files/package/kernel/mt76/patches/
 cp -rf my_files/1007-wozi-arch-arm64-dts-mt7988a-add-thermal-zone.patch mtk-openwrt-feeds/24.10/patches-base/
+cp -rf my_files/0184-wozi-fixup-mtk-hostapd-Add-txpower-vendor-command.patch mtk-openwrt-feeds/24.10/patches-feeds/
+cp -rf my_files/500-tx_power.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/files/package/kernel/mt76/patches/
+cp -rf my_files/99999_tx_power_check.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/files/package/kernel/mt76/patches/
+cp -rf my_files/defconfig mtk-openwrt-feeds/autobuild/unified/filogic/24.10/defconfig
+cp -rf my_files/regdb.Makefile mtk-openwrt-feeds/autobuild/unified/filogic/24.10/regdb.Makefile
+cp -rf my_files/w-feed_revision mtk-openwrt-feeds/autobuild/unified/feed_revision
+cp -rf my_files/w-feeds.conf.default mtk-openwrt-feeds/feeds.conf.default
+cp -rf my_files/atc-fib-fm350_gl mtk-openwrt-feeds/autobuild/unified/filogic/24.10/atc-fib-fm350_gl
 
 # 5. Limpiar configuración de perf innecesaria
 sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/defconfig || true
@@ -50,6 +58,7 @@ cd openwrt
 mkdir -p feeds/packages/utils
 mkdir -p feeds/packages/net
 mkdir -p feeds/luci/applications
+mkdir -p feeds/luci/proto
 
 # Copiar los paquetes personalizados si existen
 cp -rf ../my_files/luci-app-3ginfo-lite-main/sms-tool feeds/packages/utils/sms-tool || true
@@ -58,6 +67,9 @@ cp -rf ../my_files/luci-app-modemband-main/luci-app-modemband feeds/luci/applica
 cp -rf ../my_files/luci-app-modemband-main/modemband feeds/packages/net/modemband || true
 cp -rf ../my_files/luci-app-at-socat feeds/luci/applications/luci-app-at-socat || true
 cp -rf ../my_files/luci-app-fakemesh feeds/luci/applications/luci-app-fakemesh || true
+cp -rf ../my_files/luci-app-atinout-mod-main feeds/luci/applications/luci-app-atinout-mod || true
+cp -rf ../my_files/luci-app-3ginfo-master feeds/luci/applications/luci-app-3ginfo-master || true
+cp -rf ../my_files/luci-proto-atc feeds/luci/proto/luci-proto-atc || true
 
 ./scripts/feeds install -a
 
@@ -68,6 +80,7 @@ cp -f ../${CONFIG_FILE} .config
 yes "" | make defconfig
 
 # 9. Compilar con todos los núcleos disponibles
+trap 'echo "ERROR: La compilación ha fallado. Revisa los mensajes anteriores." >&2' ERR
 make -j$(nproc)
 
 # 10. Al terminar, mostrar resumen de módulos MediaTek y kmods incluidos
