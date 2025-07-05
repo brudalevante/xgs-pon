@@ -12,7 +12,7 @@
 #
 #*****************************************************************************
 
-# Limpieza de cualquier build anterior
+# 0. Limpieza de cualquier build anterior
 rm -rf openwrt
 rm -rf mtk-openwrt-feeds
 
@@ -30,16 +30,16 @@ cd ..
 echo cc0de56"" > mtk-openwrt-feeds/autobuild/unified/feed_revision
 
 # 2. Aplica configuraciones y parches de MediaTek
-\cp -r configs/dbg_defconfig_crypto mtk-openwrt-feeds/autobuild/unified/filogic/24.10/defconfig
-\cp -r my_files/w-rules mtk-openwrt-feeds/autobuild/unified/filogic/rules
+cp -r configs/dbg_defconfig_crypto mtk-openwrt-feeds/autobuild/unified/filogic/24.10/defconfig
+cp -r my_files/w-rules mtk-openwrt-feeds/autobuild/unified/filogic/rules
 
 # Elimina parches innecesarios
 rm -rf mtk-openwrt-feeds/24.10/patches-feeds/108-strongswan-add-uci-support.patch 
 
 # Parches adicionales
 cp -r my_files/200-wozi-libiwinfo-fix_noise_reading_for_radios.patch openwrt/package/network/utils/iwinfo/patches
-\cp -r my_files/99999_tx_power_check_by_dan_pawlik.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/files/package/kernel/mt76/patches/
-\cp -r my_files/1007-wozi-arch-arm64-dts-mt7988a-add-thermal-zone.patch mtk-openwrt-feeds/24.10/patches-base/
+cp -r my_files/99999_tx_power_check_by_dan_pawlik.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/files/package/kernel/mt76/patches/
+cp -r my_files/1007-wozi-arch-arm64-dts-mt7988a-add-thermal-zone.patch mtk-openwrt-feeds/24.10/patches-base/
 
 # Desactiva perf en los defconfig de MediaTek
 sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/defconfig
@@ -51,32 +51,35 @@ cd openwrt
 bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988_rfb-mt7996 log_file=make
 cd ..
 
-# 4. Copia tu feeds.conf.default personalizado para que coja los feeds correctos (incluido xwrt)
+# 4. Copia tu feeds.conf.default personalizado (debe contener src-git xwrt https://github.com/x-wrt/com.x-wrt.git)
 cd openwrt
 cp ../my_files/w-feeds.conf.default feeds.conf.default
 
-# 5. Actualiza e instala todos los feeds (incluido xwrt)
+# 5. Limpia el feed xwrt si existía de antes (opcional pero recomendado)
+rm -rf feeds/xwrt
+
+# 6. Actualiza e instala todos los feeds (incluido xwrt)
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
-# 6. Instala explícitamente luci-app-fakemesh desde xwrt
+# 7. Instala explícitamente luci-app-fakemesh desde xwrt
 ./scripts/feeds install luci-app-fakemesh
 
 # (Opcional) Si tienes una versión propia, sobreescribe el paquete después:
-# \cp -r ../my_files/luci-app-fakemesh/ feeds/xwrt/luci-app-fakemesh
+# cp -r ../my_files/luci-app-fakemesh/ feeds/xwrt/luci-app-fakemesh
 
-# 7. Copia tu .config predefinido si lo tienes
-\cp -r ../configs/rc1_ext_mm_config .config
+# 8. Copia tu .config predefinido si lo tienes
+cp -r ../configs/rc1_ext_mm_config .config
 
-# 8. Copia otros paquetes personalizados  
-\cp -r ../my_files/luci-app-3ginfo-lite-main/sms-tool/ feeds/packages/utils/sms-tool
-\cp -r ../my_files/luci-app-3ginfo-lite-main/luci-app-3ginfo-lite/ feeds/luci/applications
-\cp -r ../my_files/luci-app-modemband-main/luci-app-modemband/ feeds/luci/applications
-\cp -r ../my_files/luci-app-modemband-main/modemband/ feeds/packages/net/modemband
-\cp -r ../my_files/luci-app-at-socat/ feeds/luci/applications
+# 9. Copia otros paquetes personalizados  
+cp -r ../my_files/luci-app-3ginfo-lite-main/sms-tool/ feeds/packages/utils/sms-tool
+cp -r ../my_files/luci-app-3ginfo-lite-main/luci-app-3ginfo-lite/ feeds/luci/applications
+cp -r ../my_files/luci-app-modemband-main/luci-app-modemband/ feeds/luci/applications
+cp -r ../my_files/luci-app-modemband-main/modemband/ feeds/packages/net/modemband
+cp -r ../my_files/luci-app-at-socat/ feeds/luci/applications
 
-# 9. Menú de configuración (solo la primera vez o si cambias los paquetes)
+# 10. Menú de configuración (solo la primera vez o si cambias los paquetes)
 make menuconfig
 
-# 10. Compilación completa
+# 11. Compilación completa
 make -j$(nproc)
