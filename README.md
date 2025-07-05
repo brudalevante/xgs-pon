@@ -25,15 +25,15 @@ Este repositorio permite construir una imagen OpenWrt personalizada para el Bana
 
 2. **(Solo la primera vez) Da permisos de ejecución al script:**
    ```sh
-   chmod +x build_openwrt_auto.sh
+   chmod +x bpi-r4-openwrt-builder.sh
    ```
 
 3. **Ejecuta el script automático:**
    ```sh
-   ./build_openwrt_auto.sh
+   ./bpi-r4-openwrt-builder.sh
    ```
 
-   El script descargará, aplicará todos los parches y configuraciones, y compilará la imagen usando tu `.config` personalizado de `configs/rc1_ext_mm_config`.
+   El script descargará, aplicará todos los parches y configuraciones, y compilará la imagen usando tu `.config` personalizado.
 
 ---
 
@@ -59,10 +59,10 @@ openwrt/bin/targets/
 
 ### **Notas importantes**
 
-- Si quieres cambiar los paquetes incluidos, edita tu archivo `.config` en `configs/rc1_ext_mm_config` y vuelve a ejecutar el script.
+- Si quieres cambiar los paquetes incluidos, edita tu archivo `.config` en la carpeta correspondiente y vuelve a ejecutar el script.
 - Si el script da error por falta de espacio, dependencias o rutas, revisa los mensajes de error y asegúrate de cumplir todos los requisitos previos.
 - Si tienes dudas o problemas, abre un issue en este repositorio.
 
 ---
 
-¡Feliz hackeo!  
+¡Feliz hackeo!
