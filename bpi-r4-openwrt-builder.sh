@@ -2,21 +2,29 @@
 
 set -e
 
+# ----------------------
+# CONFIGURA AQUÍ SI QUIERES OTRO HASH O FEED
+# ----------------------
+OWRT_BRANCH="openwrt-24.10"
+OWRT_HASH="2a348bdbef52adb99280f01ac285d4415e91f4d6"
+MTK_FEED_HASH="cc0de566eb90309e997d66ed1095579eb3b30751"
+CONFIG_FILE="configs/rc1_ext_mm_config"   # Cambia aquí si quieres usar otro .config
+
 # 1. Limpiar entornos previos
 rm -rf openwrt
 rm -rf mtk-openwrt-feeds
 
 # 2. Clonar OpenWrt y feeds de MediaTek
-git clone --branch openwrt-24.10 https://git.openwrt.org/openwrt/openwrt.git openwrt
+git clone --branch "$OWRT_BRANCH" https://git.openwrt.org/openwrt/openwrt.git openwrt
 cd openwrt
-git checkout 2a348bdbef52adb99280f01ac285d4415e91f4d6
+git checkout "$OWRT_HASH"
 cd ..
 
 git clone https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds
 cd mtk-openwrt-feeds
-git checkout cc0de566eb90309e997d66ed1095579eb3b30751
+git checkout "$MTK_FEED_HASH"
 cd ..
-echo cc0de56"" > mtk-openwrt-feeds/autobuild/unified/feed_revision
+echo "${MTK_FEED_HASH:0:8}"" > mtk-openwrt-feeds/autobuild/unified/feed_revision
 
 # 3. Copiar archivos de configuración y reglas personalizados
 cp -rf configs/dbg_defconfig_crypto mtk-openwrt-feeds/autobuild/unified/filogic/24.10/defconfig
@@ -43,6 +51,7 @@ mkdir -p feeds/packages/utils
 mkdir -p feeds/packages/net
 mkdir -p feeds/luci/applications
 
+# Copiar los paquetes personalizados si existen
 cp -rf ../my_files/luci-app-3ginfo-lite-main/sms-tool feeds/packages/utils/sms-tool || true
 cp -rf ../my_files/luci-app-3ginfo-lite-main/luci-app-3ginfo-lite feeds/luci/applications/luci-app-3ginfo-lite || true
 cp -rf ../my_files/luci-app-modemband-main/luci-app-modemband feeds/luci/applications/luci-app-modemband || true
@@ -53,7 +62,7 @@ cp -rf ../my_files/luci-app-fakemesh feeds/luci/applications/luci-app-fakemesh |
 ./scripts/feeds install -a
 
 # 7. Copiar configuración predefinida (.config)
-cp -f ../configs/rc1_ext_mm_config .config
+cp -f ../${CONFIG_FILE} .config
 
 # 8. Asegurar que la configuración es válida para el árbol actual
 yes "" | make olddefconfig
