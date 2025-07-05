@@ -51,35 +51,42 @@ cd openwrt
 bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988_rfb-mt7996 log_file=make
 cd ..
 
-# 4. Copia tu feeds.conf.default personalizado (debe contener src-git xwrt https://github.com/x-wrt/com.x-wrt.git)
+# 4. Actualiza e instala los feeds oficiales (NO xwrt)
 cd openwrt
-cp ../my_files/w-feeds.conf.default feeds.conf.default
-
-# 5. Limpia el feed xwrt si existía de antes (opcional pero recomendado)
-rm -rf feeds/xwrt
-
-# 6. Actualiza e instala todos los feeds (incluido xwrt)
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
-# 7. Instala explícitamente luci-app-fakemesh desde xwrt
-./scripts/feeds install luci-app-fakemesh
+# 5. COPIA SOLO luci-app-fakemesh DE x-wrt (sin añadir el feed entero)
+mkdir -p package/extra
+cd package/extra
+git clone --depth=1 --single-branch --branch main https://github.com/x-wrt/com.x-wrt.git fakemesh-tmp
+mv fakemesh-tmp/luci-app-fakemesh ./
+rm -rf fakemesh-tmp
+cd ../..
 
-# (Opcional) Si tienes una versión propia, sobreescribe el paquete después:
-# cp -r ../my_files/luci-app-fakemesh/ feeds/xwrt/luci-app-fakemesh
+# 6. Copia tu .config base si tienes uno, o crea uno nuevo mínimo
+if [ -f ../configs/rc1_ext_mm_config ]; then
+    cp ../configs/rc1_ext_mm_config .config
+else
+    touch .config
+fi
 
-# 8. Copia tu .config predefinido si lo tienes
-cp -r ../configs/rc1_ext_mm_config .config
+# 7. Añade a .config la selección automática de luci-app-fakemesh y tus otros paquetes
+grep -q '^CONFIG_PACKAGE_luci-app-fakemesh=y' .config || echo "CONFIG_PACKAGE_luci-app-fakemesh=y" >> .config
+grep -q '^CONFIG_PACKAGE_luci-app-3ginfo-lite=y' .config || echo "CONFIG_PACKAGE_luci-app-3ginfo-lite=y" >> .config
+grep -q '^CONFIG_PACKAGE_luci-app-modemband=y' .config || echo "CONFIG_PACKAGE_luci-app-modemband=y" >> .config
+grep -q '^CONFIG_PACKAGE_sms-tool=y' .config || echo "CONFIG_PACKAGE_sms-tool=y" >> .config
+grep -q '^CONFIG_PACKAGE_luci-app-at-socat=y' .config || echo "CONFIG_PACKAGE_luci-app-at-socat=y" >> .config
 
-# 9. Copia otros paquetes personalizados  
+# 8. Copia otros paquetes personalizados  
 cp -r ../my_files/luci-app-3ginfo-lite-main/sms-tool/ feeds/packages/utils/sms-tool
 cp -r ../my_files/luci-app-3ginfo-lite-main/luci-app-3ginfo-lite/ feeds/luci/applications
 cp -r ../my_files/luci-app-modemband-main/luci-app-modemband/ feeds/luci/applications
 cp -r ../my_files/luci-app-modemband-main/modemband/ feeds/packages/net/modemband
 cp -r ../my_files/luci-app-at-socat/ feeds/luci/applications
 
-# 10. Menú de configuración (solo la primera vez o si cambias los paquetes)
-make menuconfig
+# 9. Preconfigura dependencias y opciones (opcional)
+make defconfig
 
-# 11. Compilación completa
+# 10. Compilación completa (sin menú interactivo)
 make -j$(nproc)
