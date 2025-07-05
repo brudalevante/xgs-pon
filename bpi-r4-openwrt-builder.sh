@@ -12,23 +12,24 @@
 #
 #*****************************************************************************
 
+# Limpieza de cualquier build anterior
 rm -rf openwrt
 rm -rf mtk-openwrt-feeds
 
-# Clona OpenWrt y el feed de MediaTek
+# 1. Clona OpenWrt y el feed de MediaTek
 git clone --branch openwrt-24.10 https://git.openwrt.org/openwrt/openwrt.git openwrt || true
 cd openwrt
 git checkout 2a348bdbef52adb99280f01ac285d4415e91f4d6
-cd -
+cd ..
 
 git clone https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds || true
 cd mtk-openwrt-feeds
 git checkout cc0de566eb90309e997d66ed1095579eb3b30751
-cd -
+cd ..
 
 echo cc0de56"" > mtk-openwrt-feeds/autobuild/unified/feed_revision
 
-# Copia configuraciones personalizadas
+# 2. Aplica configuraciones y parches de MediaTek
 \cp -r configs/dbg_defconfig_crypto mtk-openwrt-feeds/autobuild/unified/filogic/24.10/defconfig
 \cp -r my_files/w-rules mtk-openwrt-feeds/autobuild/unified/filogic/rules
 
@@ -45,31 +46,37 @@ sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-f
 sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/autobuild_5.4_mac80211_release/mt7988_wifi7_mac80211_mlo/.config
 sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/autobuild_5.4_mac80211_release/mt7986_mac80211/.config
 
+# 3. Ejecuta el autobuild de MediaTek para preparar estructura y parches
 cd openwrt
+bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988_rfb-mt7996 log_file=make
+cd ..
 
-# Usa tu feeds.conf.default personalizado, ¡esto es clave!
+# 4. Copia tu feeds.conf.default personalizado para que coja los feeds correctos (incluido xwrt)
+cd openwrt
 cp ../my_files/w-feeds.conf.default feeds.conf.default
 
-# Actualiza e instala todos los feeds, incluyendo xwrt
+# 5. Actualiza e instala todos los feeds (incluido xwrt)
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
-# Instala explícitamente luci-app-fakemesh desde xwrt
+# 6. Instala explícitamente luci-app-fakemesh desde xwrt
 ./scripts/feeds install luci-app-fakemesh
 
 # (Opcional) Si tienes una versión propia, sobreescribe el paquete después:
 # \cp -r ../my_files/luci-app-fakemesh/ feeds/xwrt/luci-app-fakemesh
 
-# Copia configuraciones adicionales y paquetes personalizados
+# 7. Copia tu .config predefinido si lo tienes
 \cp -r ../configs/rc1_ext_mm_config .config
 
-# Copia otros paquetes personalizados  
+# 8. Copia otros paquetes personalizados  
 \cp -r ../my_files/luci-app-3ginfo-lite-main/sms-tool/ feeds/packages/utils/sms-tool
 \cp -r ../my_files/luci-app-3ginfo-lite-main/luci-app-3ginfo-lite/ feeds/luci/applications
 \cp -r ../my_files/luci-app-modemband-main/luci-app-modemband/ feeds/luci/applications
 \cp -r ../my_files/luci-app-modemband-main/modemband/ feeds/packages/net/modemband
 \cp -r ../my_files/luci-app-at-socat/ feeds/luci/applications
 
-# Menú de configuración e inicio de la compilación
+# 9. Menú de configuración (solo la primera vez o si cambias los paquetes)
 make menuconfig
+
+# 10. Compilación completa
 make -j$(nproc)
