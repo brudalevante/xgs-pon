@@ -2,13 +2,13 @@
  
  >git clone ht<span>tps://github.com/brudalevante/brudalevante-openwrt-banana-pi-r4.git
  
- >chmod 776 -R brudalevante-openwrt-banana-pi-r4
+ >chmod +x build_openwrt_auto.sh
  
  >cd brudalevante-openwrt-banana-pi-r4
  
  BEFORE RUNNING BUILDER READ ALL COMMENTS IN THE SCRIPT !
  
- >./bpi-r4-openwrt-builder.sh
+ >./build_openwrt_auto.sh
  
  
  Notes for those who want to create their own experimental releases:
