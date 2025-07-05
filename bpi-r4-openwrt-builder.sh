@@ -16,7 +16,8 @@ rm -rf openwrt
 rm -rf mtk-openwrt-feeds
 
 git clone --branch openwrt-24.10 https://git.openwrt.org/openwrt/openwrt.git openwrt || true
-cd openwrt; git checkout 989b12999c5b7c35ec310d26ac6f01eb9567be6e; cd -;		#perf: disable slang support
+cd openwrt; git checkout 2a348bdbef52adb99280f01ac285d4415e91f4d6; cd -;		#perf: disable slang support
+#cd openwrt; git checkout 989b12999c5b7c35ec310d26ac6f01eb9567be6e; cd -;		#perf: disable slang support
 
 git clone  https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds || true
 cd mtk-openwrt-feeds; git checkout cc0de566eb90309e997d66ed1095579eb3b30751; cd -;	#Add mtkhnat macvlan support
