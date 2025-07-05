@@ -24,7 +24,7 @@ git clone https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds
 cd mtk-openwrt-feeds
 git checkout "$MTK_FEED_HASH"
 cd ..
-echo "${MTK_FEED_HASH:0:8}"" > mtk-openwrt-feeds/autobuild/unified/feed_revision
+echo "${MTK_FEED_HASH:0:8}" > mtk-openwrt-feeds/autobuild/unified/feed_revision
 
 # 3. Copiar archivos de configuración y reglas personalizados
 cp -rf configs/dbg_defconfig_crypto mtk-openwrt-feeds/autobuild/unified/filogic/24.10/defconfig
