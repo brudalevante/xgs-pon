@@ -4411,7 +4411,7 @@ CONFIG_HAS_LUAJIT_ARCH=y
 #
 # Python
 #
-# CONFIG_PACKAGE_libpython3=y
+CONFIG_PACKAGE_libpython3=y
 # CONFIG_PACKAGE_micropython-lib=y
 # CONFIG_PACKAGE_micropython-lib-src=y
 # CONFIG_PACKAGE_micropython-lib-unix=y
