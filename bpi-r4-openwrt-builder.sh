@@ -65,7 +65,7 @@ cp -rf ../my_files/luci-app-fakemesh feeds/luci/applications/luci-app-fakemesh |
 cp -f ../${CONFIG_FILE} .config
 
 # 8. Asegurar que la configuración es válida para el árbol actual
-yes "" | make olddefconfig
+yes "" | make defconfig
 
 # 9. Compilar con todos los núcleos disponibles
 make -j$(nproc)
