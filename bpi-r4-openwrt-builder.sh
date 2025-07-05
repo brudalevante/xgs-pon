@@ -15,9 +15,10 @@
 rm -rf openwrt
 rm -rf mtk-openwrt-feeds
 
+# Clona OpenWrt y el feed de MediaTek
 git clone --branch openwrt-24.10 https://git.openwrt.org/openwrt/openwrt.git openwrt || true
 cd openwrt
-git checkout 989b12999c5b7c35ec310d26ac6f01eb9567be6e
+git checkout 2a348bdbef52adb99280f01ac285d4415e91f4d6
 cd -
 
 git clone https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds || true
@@ -27,53 +28,48 @@ cd -
 
 echo cc0de56"" > mtk-openwrt-feeds/autobuild/unified/feed_revision
 
+# Copia configuraciones personalizadas
 \cp -r configs/dbg_defconfig_crypto mtk-openwrt-feeds/autobuild/unified/filogic/24.10/defconfig
 \cp -r my_files/w-rules mtk-openwrt-feeds/autobuild/unified/filogic/rules
 
-### remove mtk strongswan uci support patch
+# Elimina parches innecesarios
 rm -rf mtk-openwrt-feeds/24.10/patches-feeds/108-strongswan-add-uci-support.patch 
 
-### adds a frequency match check to ensure the noise value corresponds to the interface's actual frequency for multiple radios under a single wiphy
+# Parches adicionales
 cp -r my_files/200-wozi-libiwinfo-fix_noise_reading_for_radios.patch openwrt/package/network/utils/iwinfo/patches
-
-### tx_power patch - by dan pawlik
 \cp -r my_files/99999_tx_power_check_by_dan_pawlik.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/files/package/kernel/mt76/patches/
-
-### required & thermal zone 
 \cp -r my_files/1007-wozi-arch-arm64-dts-mt7988a-add-thermal-zone.patch mtk-openwrt-feeds/24.10/patches-base/
 
+# Desactiva perf en los defconfig de MediaTek
 sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/defconfig
 sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/autobuild_5.4_mac80211_release/mt7988_wifi7_mac80211_mlo/.config
 sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/autobuild_5.4_mac80211_release/mt7986_mac80211/.config
 
 cd openwrt
 
-bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988_rfb-mt7996 log_file=make
+# Usa tu feeds.conf.default personalizado, ¡esto es clave!
+cp ../my_files/w-feeds.conf.default feeds.conf.default
 
-exit 0
+# Actualiza e instala todos los feeds, incluyendo xwrt
+./scripts/feeds update -a
+./scripts/feeds install -a
 
-########### After successful end of build #############
+# Instala explícitamente luci-app-fakemesh desde xwrt
+./scripts/feeds install luci-app-fakemesh
 
-cd openwrt
-# Basic config
+# (Opcional) Si tienes una versión propia, sobreescribe el paquete después:
+# \cp -r ../my_files/luci-app-fakemesh/ feeds/xwrt/luci-app-fakemesh
+
+# Copia configuraciones adicionales y paquetes personalizados
 \cp -r ../configs/rc1_ext_mm_config .config
 
-###### Then you can add all required additional feeds/packages ######### 
-
-# qmi modems extension for example
+# Copia otros paquetes personalizados  
 \cp -r ../my_files/luci-app-3ginfo-lite-main/sms-tool/ feeds/packages/utils/sms-tool
 \cp -r ../my_files/luci-app-3ginfo-lite-main/luci-app-3ginfo-lite/ feeds/luci/applications
 \cp -r ../my_files/luci-app-modemband-main/luci-app-modemband/ feeds/luci/applications
 \cp -r ../my_files/luci-app-modemband-main/modemband/ feeds/packages/net/modemband
 \cp -r ../my_files/luci-app-at-socat/ feeds/luci/applications
 
-# ===> LÍNEA CLAVE: Instala luci-app-fakemesh desde x-wrt feed
-./scripts/feeds update -a
-./scripts/feeds install -a -f
-./scripts/feeds install luci-app-fakemesh
-
-# ===> (OPCIONAL) Si quieres sobreescribir con tu versión personalizada:
-# \cp -r ../my_files/luci-app-fakemesh/ feeds/xwrt/luci-app-fakemesh
-
+# Menú de configuración e inicio de la compilación
 make menuconfig
 make -j$(nproc)
