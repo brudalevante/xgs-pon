@@ -86,6 +86,7 @@ cd openwrt
 \cp -r ../my_files/luci-app-modemband-main/luci-app-modemband/ feeds/luci/applications
 \cp -r ../my_files/luci-app-modemband-main/modemband/ feeds/packages/net/modemband
 \cp -r ../my_files/luci-app-at-socat/ feeds/luci/applications
+\cp -r ../my_files/luci-app-fakemesh/ feeds/luci/applications
 
 ./scripts/feeds update -a
 ./scripts/feeds install -a
