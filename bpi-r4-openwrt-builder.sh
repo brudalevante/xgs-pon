@@ -16,10 +16,14 @@ rm -rf openwrt
 rm -rf mtk-openwrt-feeds
 
 git clone --branch openwrt-24.10 https://git.openwrt.org/openwrt/openwrt.git openwrt || true
-cd openwrt; git checkout 989b12999c5b7c35ec310d26ac6f01eb9567be6e; cd -;		#perf: disable slang support
+cd openwrt
+git checkout 989b12999c5b7c35ec310d26ac6f01eb9567be6e
+cd -
 
-git clone  https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds || true
-cd mtk-openwrt-feeds; git checkout cc0de566eb90309e997d66ed1095579eb3b30751; cd -;	#Add mtkhnat macvlan support
+git clone https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds || true
+cd mtk-openwrt-feeds
+git checkout cc0de566eb90309e997d66ed1095579eb3b30751
+cd -
 
 echo cc0de56"" > mtk-openwrt-feeds/autobuild/unified/feed_revision
 
@@ -43,6 +47,7 @@ sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-f
 sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/autobuild_5.4_mac80211_release/mt7986_mac80211/.config
 
 cd openwrt
+
 bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988_rfb-mt7996 log_file=make
 
 exit 0
@@ -61,10 +66,14 @@ cd openwrt
 \cp -r ../my_files/luci-app-modemband-main/luci-app-modemband/ feeds/luci/applications
 \cp -r ../my_files/luci-app-modemband-main/modemband/ feeds/packages/net/modemband
 \cp -r ../my_files/luci-app-at-socat/ feeds/luci/applications
-\cp -r ../my_files/luci-app-fakemesh/ feeds/luci/applications    # <-- LÍNEA AÑADIDA
 
+# ===> LÍNEA CLAVE: Instala luci-app-fakemesh desde x-wrt feed
 ./scripts/feeds update -a
-./scripts/feeds install -a
+./scripts/feeds install -a -f
+./scripts/feeds install luci-app-fakemesh
+
+# ===> (OPCIONAL) Si quieres sobreescribir con tu versión personalizada:
+# \cp -r ../my_files/luci-app-fakemesh/ feeds/xwrt/luci-app-fakemesh
 
 make menuconfig
 make -j$(nproc)
