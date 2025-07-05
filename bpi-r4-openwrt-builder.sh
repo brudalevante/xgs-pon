@@ -1,5 +1,7 @@
 #!/bin/bash
 
+set -e
+
 #*****************************************************************************
 #
 # Build environment - Ubuntu 64-bit Server 24.04.2
@@ -12,89 +14,62 @@
 #
 #*****************************************************************************
 
+# Limpieza previa
 rm -rf openwrt
 rm -rf mtk-openwrt-feeds
 
+# Clona OpenWrt
 git clone --branch openwrt-24.10 https://git.openwrt.org/openwrt/openwrt.git openwrt || true
-cd openwrt; git checkout 2a348bdbef52adb99280f01ac285d4415e91f4d6; cd -;		#perf: disable slang support
-#cd openwrt; git checkout 989b12999c5b7c35ec310d26ac6f01eb9567be6e; cd -;		#perf: disable slang support
+cd openwrt
+git checkout 2a348bdbef52adb99280f01ac285d4415e91f4d6
+cd -
 
+# Clona los feeds de MediaTek
 git clone  https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds || true
-cd mtk-openwrt-feeds; git checkout cc0de566eb90309e997d66ed1095579eb3b30751; cd -;	#Add mtkhnat macvlan support
-
+cd mtk-openwrt-feeds
+git checkout cc0de566eb90309e997d66ed1095579eb3b30751
+cd -
 echo cc0de56"" > mtk-openwrt-feeds/autobuild/unified/feed_revision
 
-#\cp -r configs/defconfig mtk-openwrt-feeds/autobuild/unified/filogic/24.10/defconfig
-#\cp -r configs/dbg_defconfig mtk-openwrt-feeds/autobuild/unified/filogic/24.10/defconfig	#dbg+strongswan
-\cp -r configs/dbg_defconfig_crypto mtk-openwrt-feeds/autobuild/unified/filogic/24.10/defconfig
+# Copia archivos de configuración y reglas
+cp -r configs/dbg_defconfig_crypto mtk-openwrt-feeds/autobuild/unified/filogic/24.10/defconfig
+cp -r my_files/w-rules mtk-openwrt-feeds/autobuild/unified/filogic/rules
 
-#Change Feeds Revision
-#\cp -r my_files/w-feed_revision mtk-openwrt-feeds/autobuild/unified/feed_revision
-
-\cp -r my_files/w-rules mtk-openwrt-feeds/autobuild/unified/filogic/rules
-
-### remove mtk strongswan uci support patch
+# Elimina patch innecesario de strongswan
 rm -rf mtk-openwrt-feeds/24.10/patches-feeds/108-strongswan-add-uci-support.patch 
 
-### wireless-regdb modification - this remove all regdb wireless countries restrictions
-#rm -rf openwrt/package/firmware/wireless-regdb/patches/*.*
-#rm -rf mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/files/package/firmware/wireless-regdb/patches/*.*
-#\cp -r my_files/500-tx_power.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/files/package/firmware/wireless-regdb/patches
-#\cp -r my_files/regdb.Makefile openwrt/package/firmware/wireless-regdb/Makefile
-
-### adds a frequency match check to ensure the noise value corresponds to the interface's actual frequency for multiple radios under a single wiphy
+# Aplica parches personalizados
 cp -r my_files/200-wozi-libiwinfo-fix_noise_reading_for_radios.patch openwrt/package/network/utils/iwinfo/patches
+cp -r my_files/99999_tx_power_check_by_dan_pawlik.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/files/package/kernel/mt76/patches/
+cp -r my_files/1007-wozi-arch-arm64-dts-mt7988a-add-thermal-zone.patch mtk-openwrt-feeds/24.10/patches-base/
 
-### tx_power patch - required for BE14 boards with defective eeprom flash
-#\cp -r my_files/99999_tx_power_check.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/files/package/kernel/mt76/patches/
-
-### tx_power patch - by dan pawlik
-\cp -r my_files/99999_tx_power_check_by_dan_pawlik.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/files/package/kernel/mt76/patches/
-
-### required & thermal zone 
-\cp -r my_files/1007-wozi-arch-arm64-dts-mt7988a-add-thermal-zone.patch mtk-openwrt-feeds/24.10/patches-base/
-
+# Limpia configuración de perf en defconfigs
 sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/defconfig
 sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/autobuild_5.4_mac80211_release/mt7988_wifi7_mac80211_mlo/.config
 sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/autobuild_5.4_mac80211_release/mt7986_mac80211/.config
 
-#export NO_JEVENTS=1
-
 cd openwrt
-bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988_rfb-mt7996 log_file=make
 
-exit 0
+# Copia tu configuración base (opcional, puedes comentar si prefieres configurar a mano)
+cp -r ../configs/rc1_ext_mm_config .config
 
+# Copia TODOS los paquetes personalizados ANTES de actualizar los feeds
+cp -r ../my_files/luci-app-3ginfo-lite-main/sms-tool/ feeds/packages/utils/sms-tool
+cp -r ../my_files/luci-app-3ginfo-lite-main/luci-app-3ginfo-lite/ feeds/luci/applications
+cp -r ../my_files/luci-app-modemband-main/luci-app-modemband/ feeds/luci/applications
+cp -r ../my_files/luci-app-modemband-main/modemband/ feeds/packages/net/modemband
+cp -r ../my_files/luci-app-at-socat/ feeds/luci/applications
+cp -r ../my_files/luci-app-fakemesh/ feeds/luci/applications
 
-########### After successful end of build #############
-
-## IMPORTANT NOTE !!!!!
-## Do not change Target Profile from Multiple devices to other  !!!
-## Do not remove MediaTek MT7988A rfb and MediaTek MT7988D rfb from Target Devices !!! 
-
-#################
-
-cd openwrt
-# Basic config
-\cp -r ../configs/rc1_ext_mm_config .config
-
-
-###### Then you can add all required additional feeds/packages ######### 
-
-# qmi modems extension for example
-\cp -r ../my_files/luci-app-3ginfo-lite-main/sms-tool/ feeds/packages/utils/sms-tool
-\cp -r ../my_files/luci-app-3ginfo-lite-main/luci-app-3ginfo-lite/ feeds/luci/applications
-\cp -r ../my_files/luci-app-modemband-main/luci-app-modemband/ feeds/luci/applications
-\cp -r ../my_files/luci-app-modemband-main/modemband/ feeds/packages/net/modemband
-\cp -r ../my_files/luci-app-at-socat/ feeds/luci/applications
-\cp -r ../my_files/luci-app-fakemesh/ feeds/luci/applications
-
+# Actualiza e instala feeds, así los paquetes personalizados se reconocen
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
-####### And finally configure whatever you want ##########
-
+# OPCIONAL: Si tu .config ya tiene todo activado, puedes compilar directamente.
+# Si quieres añadir o quitar paquetes, ejecuta:
 make menuconfig
+
+# Compila (ajusta el número de núcleos si no quieres usar todos)
 make -j$(nproc)
 
-
+# FIN DEL SCRIPT
