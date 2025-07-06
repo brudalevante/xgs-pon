@@ -1,23 +1,24 @@
 #!/bin/bash
 
-# 1. Limpia el entorno
+set -e
+
+# 1. Limpieza de builds previos
 rm -rf openwrt
 rm -rf mtk-openwrt-feeds
 
-# 2. Clona OpenWrt
+# 2. Clona OpenWrt y checkout commit concreto
 git clone --branch openwrt-24.10 https://git.openwrt.org/openwrt/openwrt.git openwrt
 cd openwrt
 git checkout 2a348bdbef52adb99280f01ac285d4415e91f4d6
 cd ..
 
-# 3. CLONA SIEMPRE MTK FEEDS
+# 3. Clona SIEMPRE mtk-openwrt-feeds y checkout commit concreto
 git clone https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds
 cd mtk-openwrt-feeds
 git checkout cc0de566eb90309e997d66ed1095579eb3b30751
 cd ..
 
 echo cc0de56"" > mtk-openwrt-feeds/autobuild/unified/feed_revision
-
 
 # 4. Aplica parches y configuraciones SOLO si existen
 [ -e configs/dbg_defconfig_crypto ] && cp -r configs/dbg_defconfig_crypto mtk-openwrt-feeds/autobuild/unified/filogic/24.10/defconfig
@@ -40,31 +41,41 @@ cd openwrt
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
-# 7. COPIA SOLO luci-app-fakemesh después de feeds/autobuild
+# 7. COPIA SIEMPRE luci-app-fakemesh después de feeds/autobuild
+echo "----- CLONANDO FAKEMESH -----"
 mkdir -p package/extra
 cd package/extra
+rm -rf luci-app-fakemesh
 git clone --depth=1 --single-branch --branch master https://github.com/x-wrt/com.x-wrt.git fakemesh-tmp
 mv fakemesh-tmp/luci-app-fakemesh ./
 rm -rf fakemesh-tmp
-cd ../..
+cd ../../..
+echo "----- FAKEMESH CLONADO -----"
 
 # 8. (Opcional) Copia tus otros paquetes personalizados si los tienes
-# [ -d ../my_files/luci-app-3ginfo-lite-main/sms-tool/ ] && cp -r ../my_files/luci-app-3ginfo-lite-main/sms-tool/ feeds/packages/utils/sms-tool
-# [ -d ../my_files/luci-app-3ginfo-lite-main/luci-app-3ginfo-lite/ ] && cp -r ../my_files/luci-app-3ginfo-lite-main/luci-app-3ginfo-lite/ feeds/luci/applications
-# [ -d ../my_files/luci-app-modemband-main/luci-app-modemband/ ] && cp -r ../my_files/luci-app-modemband-main/luci-app-modemband/ feeds/luci/applications
-# [ -d ../my_files/luci-app-modemband-main/modemband/ ] && cp -r ../my_files/luci-app-modemband-main/modemband/ feeds/packages/net/modemband
-# [ -d ../my_files/luci-app-at-socat/ ] && cp -r ../my_files/luci-app-at-socat/ feeds/luci/applications
+# [ -d my_files/luci-app-3ginfo-lite-main/sms-tool/ ] && cp -r my_files/luci-app-3ginfo-lite-main/sms-tool/ openwrt/feeds/packages/utils/sms-tool
+# [ -d my_files/luci-app-3ginfo-lite-main/luci-app-3ginfo-lite/ ] && cp -r my_files/luci-app-3ginfo-lite-main/luci-app-3ginfo-lite/ openwrt/feeds/luci/applications
+# [ -d my_files/luci-app-modemband-main/luci-app-modemband/ ] && cp -r my_files/luci-app-modemband-main/luci-app-modemband/ openwrt/feeds/luci/applications
+# [ -d my_files/luci-app-modemband-main/modemband/ ] && cp -r my_files/luci-app-modemband-main/modemband/ openwrt/feeds/packages/net/modemband
+# [ -d my_files/luci-app-at-socat/ ] && cp -r my_files/luci-app-at-socat/ openwrt/feeds/luci/applications
 
 # 9. Usa tu .config base si existe, o crea uno mínimo
-if [ -f ../configs/rc1_ext_mm_config ]; then
-    cp ../configs/rc1_ext_mm_config .config
+if [ -f configs/rc1_ext_mm_config ]; then
+    cp configs/rc1_ext_mm_config openwrt/.config
 else
-    touch .config
+    touch openwrt/.config
 fi
 
 # 10. Asegura la selección de luci-app-fakemesh en .config
-grep -q '^CONFIG_PACKAGE_luci-app-fakemesh=y' .config || echo "CONFIG_PACKAGE_luci-app-fakemesh=y" >> .config
+grep -q '^CONFIG_PACKAGE_luci-app-fakemesh=y' openwrt/.config || echo "CONFIG_PACKAGE_luci-app-fakemesh=y" >> openwrt/.config
+
+# Otros paquetes extra automáticos (opcional)
+# grep -q '^CONFIG_PACKAGE_luci-app-3ginfo-lite=y' openwrt/.config || echo "CONFIG_PACKAGE_luci-app-3ginfo-lite=y" >> openwrt/.config
+# grep -q '^CONFIG_PACKAGE_luci-app-modemband=y' openwrt/.config || echo "CONFIG_PACKAGE_luci-app-modemband=y" >> openwrt/.config
+# grep -q '^CONFIG_PACKAGE_sms-tool=y' openwrt/.config || echo "CONFIG_PACKAGE_sms-tool=y" >> openwrt/.config
+# grep -q '^CONFIG_PACKAGE_luci-app-at-socat=y' openwrt/.config || echo "CONFIG_PACKAGE_luci-app-at-socat=y" >> openwrt/.config
 
 # 11. Compila (sin menú)
+cd openwrt
 make defconfig
 make -j$(nproc)
