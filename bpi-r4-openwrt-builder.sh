@@ -59,7 +59,7 @@ cd openwrt
 # 5. COPIA SOLO luci-app-fakemesh DE x-wrt (sin añadir el feed entero)
 mkdir -p package/extra
 cd package/extra
-git clone --depth=1 --single-branch --branch main https://github.com/x-wrt/com.x-wrt.git fakemesh-tmp
+git clone --depth=1 --single-branch --branch master https://github.com/x-wrt/com.x-wrt.git fakemesh-tmp
 mv fakemesh-tmp/luci-app-fakemesh ./
 rm -rf fakemesh-tmp
 cd ../..
