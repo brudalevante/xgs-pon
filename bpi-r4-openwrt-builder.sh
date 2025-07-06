@@ -45,11 +45,15 @@ mv fakemesh-tmp/luci-app-fakemesh ./
 rm -rf fakemesh-tmp
 cd ../..
 
-# 8. Copia tu .config personalizado (debe estar actualizado y contener luci-app-fakemesh)
+# 8. Copia tu .config personalizado (debe contener CONFIG_PACKAGE_luci-app-fakemesh=y)
 cp ../configs/rc1_ext_mm_config .config
 
 # 9. Refresca dependencias con defconfig
 make defconfig
 
-# 10. Compila
+# 10. (Opcional) Verifica que fakemesh está activado
+echo "Verificando luci-app-fakemesh en .config:"
+grep fakemesh .config || (echo "NO se encontró luci-app-fakemesh en .config" && exit 1)
+
+# 11. Compila
 make -j$(nproc)
