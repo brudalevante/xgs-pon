@@ -1,7 +1,8 @@
 #!/bin/bash
 
-# 1. Limpieza de builds previos
+# 1. Limpia el entorno
 rm -rf openwrt
+rm -rf mtk-openwrt-feeds
 
 # 2. Clona OpenWrt
 git clone --branch openwrt-24.10 https://git.openwrt.org/openwrt/openwrt.git openwrt
@@ -9,8 +10,14 @@ cd openwrt
 git checkout 2a348bdbef52adb99280f01ac285d4415e91f4d6
 cd ..
 
-# 3. (No clonar mtk-openwrt-feeds, ya está en tu repo)
+# 3. CLONA SIEMPRE MTK FEEDS
+git clone https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds
+cd mtk-openwrt-feeds
+git checkout cc0de566eb90309e997d66ed1095579eb3b30751
+cd ..
+
 echo cc0de56"" > mtk-openwrt-feeds/autobuild/unified/feed_revision
+
 
 # 4. Aplica parches y configuraciones SOLO si existen
 [ -e configs/dbg_defconfig_crypto ] && cp -r configs/dbg_defconfig_crypto mtk-openwrt-feeds/autobuild/unified/filogic/24.10/defconfig
