@@ -36,17 +36,15 @@ bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
-cd .. # <- ESTE PASO ES FUNDAMENTAL
+cd .. # <- Volver a la raíz
 
-# 7. Clona SIEMPRE tu versión de luci-app-fakemesh (estructura: repo = paquete directo)
-echo "=== ANTES DEL CLON ==="
+# 7. Clona SIEMPRE tu versión de luci-app-fakemesh DESPUÉS del autobuild y los feeds
+echo "=== ANTES DEL CLON luci-app-fakemesh ==="
 mkdir -p openwrt/package/extra
-cd openwrt/package/extra
-rm -rf luci-app-fakemesh
-git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/fakemesh.git luci-app-fakemesh
-ls -l luci-app-fakemesh || echo "NO SE ENCONTRÓ LA CARPETA DESPUÉS DEL CLON"
-cd ../../..
-echo "=== DESPUÉS DEL CLON ==="
+rm -rf openwrt/package/extra/luci-app-fakemesh
+git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/fakemesh.git openwrt/package/extra/luci-app-fakemesh
+ls -l openwrt/package/extra/luci-app-fakemesh || echo "NO SE ENCONTRÓ LA CARPETA DESPUÉS DEL CLON"
+echo "=== DESPUÉS DEL CLON luci-app-fakemesh ==="
 
 cd openwrt
 
