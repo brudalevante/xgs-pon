@@ -15,24 +15,24 @@ PKG_LICENSE:=GPLv3
 PKG_LICENSE_FILES:=LICENSE
 PKG_MAINTAINER:=Chen Minqiang <ptpt52@gmail.com>
 
-PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_NAME)
-
 include $(INCLUDE_DIR)/package.mk
 
 define Package/luci-app-fakemesh
-	CATEGORY:=X
-	SUBMENU:=Configuration Fake Mesh Support
-	TITLE:=LuCI Support for fakemesh
-	PKGARCH:=all
-	DEPENDS:=+jsonfilter +umdns +firewall4
+  SECTION:=luci
+  CATEGORY:=LuCI
+  SUBMENU:=3. Applications
+  TITLE:=LuCI support for fakemesh
+  PKGARCH:=all
+  DEPENDS:=+umdns +jsonfilter +firewall4
 endef
 
 define Package/luci-app-fakemesh/description
-	LuCI Support for fakemesh.
+LuCI support for fakemesh mesh mode configuration and management.
 endef
 
 define Build/Prepare
-	$(foreach po,$(wildcard ${CURDIR}/files/luci/i18n/*.po), \
+	$(call Build/Prepare/Default)
+	$(foreach po,$(wildcard $(CURDIR)/files/luci/i18n/*.po), \
 		po2lmo $(po) $(PKG_BUILD_DIR)/$(patsubst %.po,%.lmo,$(notdir $(po)));)
 endef
 
@@ -46,23 +46,9 @@ define Package/luci-app-fakemesh/conffiles
 /etc/config/fakemesh
 endef
 
-define Package/luci-app-fakemesh/postinst
-#!/bin/sh
-if [ -z "$$IPKG_INSTROOT" ]; then
-  ( . /etc/uci-defaults/40_luci-app-fakemesh )
-  rm -f /etc/uci-defaults/40_luci-app-fakemesh
-  ( . /etc/uci-defaults/96-fakemesh-defaults )
-  rm -f /etc/uci-defaults/96-fakemesh-defaults
-
-  rm -rf /tmp/luci-indexcache /tmp/luci-modulecache
-fi
-
-exit 0
-endef
-
 define Package/luci-app-fakemesh/install
 	$(INSTALL_DIR) $(1)/usr/lib/lua/luci/i18n
-	$(INSTALL_DATA) $(PKG_BUILD_DIR)/fakemesh.*.lmo $(1)/usr/lib/lua/luci/i18n/
+	$(INSTALL_DATA) $(PKG_BUILD_DIR)/fakemesh.*.lmo $(1)/usr/lib/lua/luci/i18n/ 2>/dev/null || true
 	$(INSTALL_DIR) $(1)/etc/config
 	$(INSTALL_DATA) ./root/etc/config/fakemesh $(1)/etc/config/fakemesh
 	$(INSTALL_DIR) $(1)/etc/init.d
@@ -84,6 +70,20 @@ define Package/luci-app-fakemesh/install
 	$(INSTALL_DATA) ./htdocs/luci-static/resources/view/fakemesh/fakemesh.js $(1)/www/luci-static/resources/view/fakemesh/fakemesh.js
 	$(INSTALL_DIR) $(1)/usr/share/ucitrack
 	$(INSTALL_DATA) ./root/usr/share/ucitrack/*.json $(1)/usr/share/ucitrack/
+endef
+
+define Package/luci-app-fakemesh/postinst
+#!/bin/sh
+if [ -z "$$IPKG_INSTROOT" ]; then
+  ( . /etc/uci-defaults/40_luci-app-fakemesh )
+  rm -f /etc/uci-defaults/40_luci-app-fakemesh
+  ( . /etc/uci-defaults/96-fakemesh-defaults )
+  rm -f /etc/uci-defaults/96-fakemesh-defaults
+
+  rm -rf /tmp/luci-indexcache /tmp/luci-modulecache
+fi
+
+exit 0
 endef
 
 $(eval $(call BuildPackage,luci-app-fakemesh))
