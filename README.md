@@ -1,10 +1,10 @@
 # bpi-r4-openwrt-builder
  
- >git clone ht<span>tps://github.com/brudalevante/brudalevante-openwrt-banana-pi-r4.git
+ >git clone ht<span>tps://github.com/brudalevante/fakemesh.git
  
- >chmod 776 -R brudalevante-openwrt-banana-pi-r4
+ >chmod 776 -R fakemesh
  
- >cd brudalevante-openwrt-banana-pi-r4
+ >cd fakemesh
  
  BEFORE RUNNING BUILDER READ ALL COMMENTS IN THE SCRIPT !
  
