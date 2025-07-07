@@ -1,86 +1,86 @@
-## fakemesh简介
+## Introducción a fakemesh
 
-fakemesh是一种网络拓扑结构，由一个`控制器（AC）`和一个或多个`有线AP（Wired AP）`和`卫星（Agent）`组成。它是一种混合了`无线Mesh`和`AC+AP`两种组网模式的混合网络，其中，`有线AP`通过网线和`控制器（AC）`相连，而`卫星（Agent）`则通过无线STA方式接入，共同构成一个无线（包括有线）覆盖网络。
+fakemesh es una estructura de topología de red compuesta por un `controlador (AC)`, uno o varios `AP cableados (Wired AP)` y `satélites (Agent)`. Es una red híbrida que combina los modos de red `Mesh inalámbrico` y `AC+AP`. En esta arquitectura, los `AP cableados` están conectados al `controlador (AC)` mediante cable de red, mientras que los `satélites (Agent)` se conectan de forma inalámbrica como clientes STA, formando conjuntamente una red de cobertura inalámbrica (que también puede incluir conexiones cableadas).
 
-fakemesh的部署确实相对较为方便，只需要将节点设备连接到正确的网络，并设置节点设备的角色，Mesh ID等信息即可。因为fakemesh结合了无线Mesh和AC+AP两种组网模式，所以也可以很方便地进行混合组网，提高了网络的覆盖范围和可靠性。
+El despliegue de fakemesh es relativamente sencillo: solo necesitas conectar los dispositivos nodo a la red adecuada y configurar su rol, el Mesh ID y otros parámetros. Como fakemesh combina los modos Mesh inalámbrico y AC+AP, es muy fácil realizar una red híbrida, mejorando el alcance y la fiabilidad de la red.
 
-目前[X-WRT](https://github.com/x-wrt/x-wrt)默认集成了fakemesh功能
+Actualmente, [X-WRT](https://github.com/x-wrt/x-wrt) integra fakemesh de forma predeterminada.
 
-## fakemesh 使用
+## Uso de fakemesh
 
-### 组网成功后统一的访问设备的地址格式如下:
+### Tras una configuración exitosa, las direcciones de acceso a los dispositivos son:
 
-访问控制器的地址: `http://controller.fakemesh/`或者`http://ac.fakemesh/`
+Acceso al controlador: `http://controller.fakemesh/` o `http://ac.fakemesh/`
 
-访问AP的地址: `http://{mac}.ap.fakemesh/` 或者 `http://N.ap.fakemesh/`
+Acceso a un AP: `http://{mac}.ap.fakemesh/` o `http://N.ap.fakemesh/`
 
-其中`{mac}`是AP的MAC地址，比如`{mac}=1122334455AB`，`N`是AP的自动编号，比如 N=1, N=2, N=3, ...
+Donde `{mac}` es la dirección MAC del AP (por ejemplo, `{mac}=1122334455AB`), y `N` es un número asignado automáticamente al AP (N=1, N=2, N=3, ...).
 
-例子:
+Ejemplo:
 ```
 http://1.ap.fakemesh/
 http://1122334455AB.ap.fakemesh/
 ```
 
-### 故障处理:
+### Resolución de problemas
 
-AP离线3分钟左右进入故障模式，这个模式开启默认SSID，可以提供接入管理重新配置。
-故障模式的默认SSID和密码是:
+Si un AP pierde la conexión durante unos 3 minutos, entra en modo de fallo. En este modo, se habilita un SSID por defecto, permitiendo que te conectes para reconfigurarlo.
+El SSID y contraseña por defecto en modo de fallo son:
 ```
 SSID: X-WRT_XXXX
-PASSWD: 88888888
+CONTRASEÑA: 88888888
 ```
 
-故障模式下AP的管理IP地址是DHCP的网关地址，比如电脑获取到`192.168.16.x`的IP，那么AP的管理IP就是`192.168.16.1`
+La IP de gestión del AP en modo de fallo será la puerta de enlace DHCP. Por ejemplo, si tu ordenador obtiene una IP `192.168.16.x`, la IP de gestión del AP será `192.168.16.1`.
 
-## fakemesh 基本组成
+## Componentes básicos de fakemesh
 
-组网由一个`控制器(controller)`和一个或者多个`AP`组成
+La red incluye un `controlador (controller)` y uno o varios `AP`.
 
-AP包括: `卫星(Agent)`和`有线AP(Wired AP)`两种
+Los AP pueden ser: `satélites (Agent)` o `AP cableados (Wired AP)`.
 
-**控制器(Controller)**:  作为AC和出口路由器，提供网络出口上网，统一管理下挂的卫星和有线AP，统一管理无线
+**Controlador (Controller):** Actúa como AC y router principal, proporcionando salida a Internet y gestión centralizada de los satélites y AP cableados, así como de la configuración inalámbrica.
 
-**卫星(Agent)**:  通过Wi-Fi组网接入的AP
+**Satélite (Agent):** AP que se conecta a la red mediante Wi-Fi.
 
-**有线AP(Wired AP)**:  通过网线组网接入的AP
+**AP cableado (Wired AP):** AP que se conecta a la red mediante cable de red.
 
-## fakemesh 配置参数
+## Parámetros de configuración de fakemesh
 
 ### 1. Mesh ID
 
-   这个参数是fakemesh网络组网的统一ID，控制器、卫星、有线AP都要设置相同的Mesh ID。
+   Este parámetro es el ID común de la red fakemesh; debe ser igual en el controlador, satélites y AP cableados.
 
-### 2. 密钥(Key)
+### 2. Clave (Key)
 
-   这是组网的统一密钥，组网加密需要，如果不需要加密可以留空白。
+   Es la clave compartida de la red. Se utiliza para cifrado; si no deseas cifrado puedes dejarlo en blanco.
 
-### 3. 带宽(Band)
+### 3. Banda (Band)
 
-   这是组网使用的无线频段，要设置相同，5G或者2G。
+   Es la banda inalámbrica utilizada (2G o 5G). Todos los nodos deben estar configurados en la misma banda.
 
-### 4. 角色(Role)
+### 4. Rol (Role)
 
-   可以是控制器、卫星、有线AP。
+   Puede ser controlador, satélite o AP cableado.
 
-### 5. 同步配置(Sync Config)
+### 5. Configuración sincronizada (Sync Config)
 
-   是否统一管理Wi-Fi配置等，Wi-Fi配置由控制器统一配置管理。
+   Indica si la configuración Wi-Fi se gestiona de forma centralizada desde el controlador.
 
-### 6. 访问 IP 地址(Access IP address)
+### 6. Dirección IP de acceso (Access IP address)
 
-   设置一个特定的IP地址给控制器，可以通过这个IP访问控制器的管理界面。
+   Permite asignar una IP específica al controlador para acceder a su interfaz de gestión.
 
-### 7. 关闭前传(Fronthaul Disabled)
-   这个节点关闭前传无线信号，也就是不允许其他AP节点通过这个节点Wi-Fi接入。
+### 7. Desactivar Fronthaul (Fronthaul Disabled)
+   Si se activa, este nodo no permitirá que otros AP se conecten mediante su Wi-Fi.
 
-### 8. 漫游组件(Band Steer Helper)
-   目前可以选择[DAWN](https://github.com/fakemesh/dawn)或者[usteer](https://github.com/fakemesh/usteer)作为漫游辅助控件。
+### 8. Componente de itinerancia (Band Steer Helper)
+   Actualmente se puede elegir entre [DAWN](https://github.com/fakemesh/dawn) o [usteer](https://github.com/fakemesh/usteer) como asistentes de itinerancia.
 
-## 无线管理(Wireless Management)
+## Gestión inalámbrica
 
-   可以在控制器界面上统一管理无线，包括增删SSID，设置SSID的加密方式，频宽。
+   Desde la interfaz del controlador se puede gestionar toda la red inalámbrica: añadir o eliminar SSID, establecer cifrado y ancho de banda, etc.
 
-## 控制器(Controller)旁路部署
+## Despliegue del controlador en modo “bypass” (no como gateway)
 
-   需要注意的是，如果控制器不作为网关出口并且不提供DHCP服务，用户需要手动配置网络设置，包括设置控制器的LAN口IP地址、网关IP和DNS。此外，通常控制器的LAN口会默认启用DHCP客户端，从第三方网关获取IP和网关，如果需要使用静态IP，则需要保证控制器和第三方网关在同一个网段且可以相互通信。否则，就无法实现控制器与其他AP的同步配置。
+   Si el controlador no actúa como puerta de enlace ni proporciona DHCP, deberás configurar manualmente la red: asignar IP LAN, puerta de enlace y DNS al controlador. Por defecto, el puerto LAN del controlador será cliente DHCP y obtendrá IP de un gateway externo. Si prefieres IP estática, asegúrate de que el controlador y el gateway estén en la misma subred y puedan comunicarse entre sí. Si no es así, no será posible sincronizar la configuración entre el controlador y los AP.
