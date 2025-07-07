@@ -38,31 +38,40 @@ bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988
 
 cd .. # <- Volver a la raíz
 
-# 7. Clona SIEMPRE tu versión de luci-app-fakemesh DESPUÉS del autobuild y los feeds
-echo "=== ANTES DEL CLON luci-app-fakemesh ==="
+# 7. Clona luci-app-fakemesh DESPUÉS del autobuild y los feeds
+echo "=== CLONANDO luci-app-fakemesh ==="
 mkdir -p openwrt/package/extra
 rm -rf openwrt/package/extra/luci-app-fakemesh
 git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/fakemesh.git openwrt/package/extra/luci-app-fakemesh
-ls -l openwrt/package/extra/luci-app-fakemesh || echo "NO SE ENCONTRÓ LA CARPETA DESPUÉS DEL CLON"
-echo "=== DESPUÉS DEL CLON luci-app-fakemesh ==="
+
+echo "=== CONTENIDO DE openwrt/package/extra ==="
+ls -l openwrt/package/extra
+
+echo "=== CONTENIDO DE openwrt/package/extra/luci-app-fakemesh ==="
+ls -l openwrt/package/extra/luci-app-fakemesh
+
+echo "=== Mostrando Makefile de luci-app-fakemesh ==="
+cat openwrt/package/extra/luci-app-fakemesh/Makefile
+
+echo
+echo "==== PAUSA PARA COMPROBAR ===="
+echo "Verifica en otra terminal que la carpeta y el contenido existen:"
+echo "    - openwrt/package/extra/luci-app-fakemesh"
+echo "    - Makefile y ficheros dentro"
+echo "Pulsa ENTER para continuar con la build..."
+read
 
 cd openwrt
 
 # 8. Copia tu .config personalizado (debe contener CONFIG_PACKAGE_luci-app-fakemesh=y)
 cp ../configs/rc1_ext_mm_config .config
 
-# 9. Verifica la existencia del paquete y el Makefile antes de defconfig
-echo "=== VERIFICACIÓN luci-app-fakemesh ==="
-find package/extra/luci-app-fakemesh
-cat package/extra/luci-app-fakemesh/Makefile || { echo "NO EXISTE EL MAKEFILE"; exit 1; }
-echo "=== FIN VERIFICACIÓN luci-app-fakemesh ==="
-
-# 10. Refresca dependencias con defconfig
+# 9. Refresca dependencias con defconfig
 make defconfig
 
-# 11. (Opcional) Verifica que fakemesh está activado en .config
+# 10. (Opcional) Verifica que fakemesh está activado en .config
 echo "Verificando luci-app-fakemesh en .config:"
 grep fakemesh .config || (echo "NO se encontró luci-app-fakemesh en .config" && exit 1)
 
-# 12. Compila
+# 11. Compila
 make -j$(nproc)
