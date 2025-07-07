@@ -37,11 +37,14 @@ bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988
 ./scripts/feeds install -a
 
 # 7. Clona SIEMPRE tu versión de luci-app-fakemesh (estructura: repo = paquete directo)
-mkdir -p package/extra
-cd package/extra
+echo "=== ANTES DEL CLON ==="
+mkdir -p openwrt/package/extra
+cd openwrt/package/extra
 rm -rf luci-app-fakemesh
 git clone --depth=1 --single-branch --branch master https://github.com/brudalevante/fakemesh.git luci-app-fakemesh
-cd ../..
+ls -l luci-app-fakemesh || echo "NO SE ENCONTRÓ LA CARPETA DESPUÉS DEL CLON"
+cd ../../..
+echo "=== DESPUÉS DEL CLON ==="
 
 # 8. Copia tu .config personalizado (debe contener CONFIG_PACKAGE_luci-app-fakemesh=y)
 cp ../configs/rc1_ext_mm_config .config
