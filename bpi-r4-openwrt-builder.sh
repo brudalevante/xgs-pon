@@ -43,7 +43,7 @@ echo "=== ANTES DEL CLON ==="
 mkdir -p openwrt/package/extra
 cd openwrt/package/extra
 rm -rf luci-app-fakemesh
-git clone --depth=1 --single-branch --branch master https://github.com/brudalevante/fakemesh.git luci-app-fakemesh
+git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/fakemesh.git luci-app-fakemesh
 ls -l luci-app-fakemesh || echo "NO SE ENCONTRÓ LA CARPETA DESPUÉS DEL CLON"
 cd ../../..
 echo "=== DESPUÉS DEL CLON ==="
