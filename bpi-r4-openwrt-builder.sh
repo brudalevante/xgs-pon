@@ -55,7 +55,7 @@ cat openwrt/package/extra/luci-app-fakemesh/Makefile
 
 echo
 echo "==== PAUSA PARA COMPROBAR ===="
-echo "Verifica en otra terminal que la carpeta y el contenido existen:"
+echo "Verifica en otra terminal o consola que la carpeta y el contenido existen:"
 echo "    - openwrt/package/extra/luci-app-fakemesh"
 echo "    - Makefile y ficheros dentro"
 echo "Pulsa ENTER para continuar con la build..."
