@@ -36,11 +36,11 @@ bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
-# 7. Clona SIEMPRE luci-app-fakemesh antes de defconfig para que esté disponible
+# 7. Clona SIEMPRE tu versión de luci-app-fakemesh antes de defconfig para que esté disponible
 mkdir -p package/extra
 cd package/extra
 rm -rf luci-app-fakemesh
-git clone --depth=1 --single-branch --branch master https://github.com/x-wrt/com.x-wrt.git fakemesh-tmp
+git clone --depth=1 --single-branch --branch master https://github.com/brudalevante/fakemesh.git fakemesh-tmp
 mv fakemesh-tmp/luci-app-fakemesh ./
 rm -rf fakemesh-tmp
 cd ../..
