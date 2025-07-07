@@ -2,48 +2,67 @@
 set -e
 
 # 1. Limpieza inicial
-rm -rf openwrt
+rm -rf openwrt mtk-openwrt-feeds
 
-# 2. Clona OpenWrt y checkout commit concreto
+# 2. Clona OpenWrt y hace checkout del commit deseado
 git clone --branch openwrt-24.10 https://git.openwrt.org/openwrt/openwrt.git openwrt
 cd openwrt
 git checkout 2a348bdbef52adb99280f01ac285d4415e91f4d6
 cd ..
 
-# 3. (Opcional) Actualiza e instala feeds oficiales
+# 3. Clona el feed MTK y hace checkout del commit deseado
+git clone https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds || true
+cd mtk-openwrt-feeds
+git checkout 7ab016b920ee13c0c099ab8b57b1774c95609deb
+cd ..
+echo "7ab016b" > mtk-openwrt-feeds/autobuild/unified/feed_revision
+
+# 4. Aplica defconfigs, reglas y parches WiFi
+cp -r configs/dbg_defconfig_crypto mtk-openwrt-feeds/autobuild/unified/filogic/24.10/defconfig
+cp -r my_files/w-rules mtk-openwrt-feeds/autobuild/unified/filogic/rules
+cp -r my_files/200-wozi-libiwinfo-fix_noise_reading_for_radios.patch openwrt/package/network/utils/iwinfo/patches
+cp -r my_files/99999_tx_power_check.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/files/package/kernel/mt76/patches/
+cp -r my_files/1007-wozi-arch-arm64-dts-mt7988a-add-thermal-zone.patch mtk-openwrt-feeds/24.10/patches-base/
+
+sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/defconfig
+sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/autobuild_5.4_mac80211_release/mt7988_wifi7_mac80211_mlo/.config
+sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/autobuild_5.4_mac80211_release/mt7986_mac80211/.config
+
+# 5. Ejecuta el autobuild de MTK (esto puede tardar)
+cd openwrt
+bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988_rfb-mt7996 log_file=make
+cd ..
+
+# 6. Actualiza e instala feeds oficiales de OpenWrt
 cd openwrt
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 cd ..
 
-# 4. Clona luci-app-fakemesh
+# 7. Clona tu luci-app-fakemesh DESPUÉS del autobuild y feeds
 echo "=== CLONANDO luci-app-fakemesh ==="
 mkdir -p openwrt/package/extra
 rm -rf openwrt/package/extra/luci-app-fakemesh
 git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/fakemesh.git openwrt/package/extra/luci-app-fakemesh
 
-echo "=== CONTENIDO DE openwrt/package/extra ==="
-ls -l openwrt/package/extra
-
 echo "=== CONTENIDO DE openwrt/package/extra/luci-app-fakemesh ==="
 ls -l openwrt/package/extra/luci-app-fakemesh
 
-echo "=== Mostrando Makefile de luci-app-fakemesh ==="
-cat openwrt/package/extra/luci-app-fakemesh/Makefile
-
 echo
 echo "==== PAUSA PARA COMPROBAR ===="
-echo "Verifica en otra terminal que la carpeta y el contenido existen:"
-echo "    - openwrt/package/extra/luci-app-fakemesh"
-echo "    - Makefile y ficheros dentro"
-echo "Pulsa ENTER para continuar con la build..."
+echo "Verifica el contenido y pulsa ENTER para continuar..."
 read
 
 cd openwrt
 
-# 5. make menuconfig para depuración visual
-make menuconfig
+# 8. (Opcional) Copia tu .config personalizado si lo necesitas (si no, lo generará el autobuild+rules)
+# cp ../configs/rc1_ext_mm_config .config
 
-# (Opcional: puedes buscar tu paquete en el menú y guardarlo)
+# 9. Refresca dependencias y configura según lo que quedó activado en los rules
+make defconfig
 
-echo "Fin de la prueba rápida."
+# 10. Verifica que tu paquete está en el .config
+grep fakemesh .config || (echo "NO se encontró luci-app-fakemesh en .config" && exit 1)
+
+# 11. Compila
+make -j$(nproc)
