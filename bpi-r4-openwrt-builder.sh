@@ -51,12 +51,18 @@ cd openwrt
 # 8. Copia tu .config personalizado (debe contener CONFIG_PACKAGE_luci-app-fakemesh=y)
 cp ../configs/rc1_ext_mm_config .config
 
-# 9. Refresca dependencias con defconfig
+# 9. Verifica la existencia del paquete y el Makefile antes de defconfig
+echo "=== VERIFICACIÓN luci-app-fakemesh ==="
+find package/extra/luci-app-fakemesh
+cat package/extra/luci-app-fakemesh/Makefile || { echo "NO EXISTE EL MAKEFILE"; exit 1; }
+echo "=== FIN VERIFICACIÓN luci-app-fakemesh ==="
+
+# 10. Refresca dependencias con defconfig
 make defconfig
 
-# 10. (Opcional) Verifica que fakemesh está activado en .config
+# 11. (Opcional) Verifica que fakemesh está activado en .config
 echo "Verificando luci-app-fakemesh en .config:"
 grep fakemesh .config || (echo "NO se encontró luci-app-fakemesh en .config" && exit 1)
 
-# 11. Compila
+# 12. Compila
 make -j$(nproc)
