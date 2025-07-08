@@ -28,17 +28,11 @@ sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-f
 sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/autobuild_5.4_mac80211_release/mt7988_wifi7_mac80211_mlo/.config
 sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/autobuild_5.4_mac80211_release/mt7986_mac80211/.config
 
-# 5. Ejecuta el autobuild de MTK (esto puede tardar)
-cd openwrt
-bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988_rfb-mt7996 log_file=make
-cd ..
-
-
 # 6. Clona tu luci-app-fakemesh DESPUÉS del autobuild y feeds
 echo "=== CLONANDO luci-app-fakemesh ==="
 mkdir -p openwrt/package/extra
 rm -rf openwrt/package/extra/luci-app-fakemesh
-git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/fakemesh.git openwrt/package/extra/luci-app-fakemesh
+git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/fakemesh-2.git openwrt/package/extra/luci-app-fakemesh
 
 echo "=== CONTENIDO DE openwrt/package/extra/luci-app-fakemesh ==="
 ls -l openwrt/package/extra/luci-app-fakemesh
@@ -47,6 +41,11 @@ echo
 echo "==== PAUSA PARA HACER make menuconfig ===="
 echo "Abre una terminal, ve a openwrt/, ejecuta 'make menuconfig', selecciona luci-app-fakemesh, guarda y sal, luego vuelve aquí y pulsa ENTER para continuar..."
 read
+
+# 5. Ejecuta el autobuild de MTK (esto puede tardar)
+cd openwrt
+bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988_rfb-mt7996 log_file=make
+cd ..
 
 cd openwrt
 # Basic config
@@ -61,7 +60,7 @@ cd openwrt
 \cp -r ../my_files/luci-app-modemband-main/luci-app-modemband/ feeds/luci/applications
 \cp -r ../my_files/luci-app-modemband-main/modemband/ feeds/packages/net/modemband
 \cp -r ../my_files/luci-app-at-socat/ feeds/luci/applications
-\cp -r ../my_files/luci-app-fakemesh feeds/luci/applications/
+\cp -r ../my_files/luci-app-fakemesh/ feeds/luci/applications/
 
 # 7. Actualiza e instala feeds oficiales de OpenWrt
 cd openwrt
