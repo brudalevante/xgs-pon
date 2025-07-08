@@ -49,20 +49,17 @@ echo "=== CONTENIDO DE openwrt/package/extra/luci-app-fakemesh ==="
 ls -l openwrt/package/extra/luci-app-fakemesh
 
 echo
-echo "==== PAUSA PARA COMPROBAR ===="
-echo "Verifica el contenido y pulsa ENTER para continuar..."
+echo "==== PAUSA PARA HACER make menuconfig ===="
+echo "Abre una terminal, ve a openwrt/, ejecuta 'make menuconfig', selecciona luci-app-fakemesh, guarda y sal, luego vuelve aquí y pulsa ENTER para continuar..."
 read
 
 cd openwrt
 
-# 8. (Opcional) Copia tu .config personalizado si lo necesitas (si no, lo generará el autobuild+rules)
-# cp ../configs/rc1_ext_mm_config .config
-
-# 9. Refresca dependencias y configura según lo que quedó activado en los rules
+# 8. Refresca dependencias tras menuconfig
 make defconfig
 
-# 10. Verifica que tu paquete está en el .config
+# 9. Verifica que tu paquete está en el .config
 grep fakemesh .config || (echo "NO se encontró luci-app-fakemesh en .config" && exit 1)
 
-# 11. Compila
+# 10. Compila
 make -j$(nproc)
