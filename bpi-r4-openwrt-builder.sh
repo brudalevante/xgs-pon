@@ -28,11 +28,17 @@ sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-f
 sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/autobuild_5.4_mac80211_release/mt7988_wifi7_mac80211_mlo/.config
 sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/autobuild_5.4_mac80211_release/mt7986_mac80211/.config
 
-# 5. Clona tu luci-app-fakemesh DESPUÉS del autobuild y feeds
+# 5. Ejecuta el autobuild de MTK (esto puede tardar)
+cd openwrt
+bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988_rfb-mt7996 log_file=make
+cd ..
+
+
+# 6. Clona tu luci-app-fakemesh DESPUÉS del autobuild y feeds
 echo "=== CLONANDO luci-app-fakemesh ==="
 mkdir -p openwrt/package/extra
 rm -rf openwrt/package/extra/luci-app-fakemesh
-git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/fakemesh-2.git openwrt/package/extra/luci-app-fakemesh
+git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/fakemesh.git openwrt/package/extra/luci-app-fakemesh
 
 echo "=== CONTENIDO DE openwrt/package/extra/luci-app-fakemesh ==="
 ls -l openwrt/package/extra/luci-app-fakemesh
@@ -43,18 +49,25 @@ echo "Abre una terminal, ve a openwrt/, ejecuta 'make menuconfig', selecciona lu
 read
 
 cd openwrt
+# Basic config
+\cp -r ../configs/rc1_ext_mm_config .config
 
-# 6. Ejecuta el autobuild de MTK (esto puede tardar)
-cd openwrt
-bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988_rfb-mt7996 log_file=make
-cd ..
+
+###### Then you can add all required additional feeds/packages ######### 
+
+# qmi modems extension for example
+\cp -r ../my_files/luci-app-3ginfo-lite-main/sms-tool/ feeds/packages/utils/sms-tool
+\cp -r ../my_files/luci-app-3ginfo-lite-main/luci-app-3ginfo-lite/ feeds/luci/applications
+\cp -r ../my_files/luci-app-modemband-main/luci-app-modemband/ feeds/luci/applications
+\cp -r ../my_files/luci-app-modemband-main/modemband/ feeds/packages/net/modemband
+\cp -r ../my_files/luci-app-at-socat/ feeds/luci/applications
+\cp -r ../my_files/luci-app-fakemesh feeds/luci/applications/
 
 # 7. Actualiza e instala feeds oficiales de OpenWrt
 cd openwrt
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 cd ..
-
 
 
 # 8. Refresca dependencias tras menuconfig
