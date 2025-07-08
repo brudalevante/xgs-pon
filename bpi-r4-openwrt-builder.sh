@@ -28,7 +28,7 @@ sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-f
 sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/autobuild_5.4_mac80211_release/mt7988_wifi7_mac80211_mlo/.config
 sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/autobuild_5.4_mac80211_release/mt7986_mac80211/.config
 
-# 6. Clona tu luci-app-fakemesh DESPUÉS del autobuild y feeds
+# 5. Clona tu luci-app-fakemesh DESPUÉS del autobuild y feeds
 echo "=== CLONANDO luci-app-fakemesh ==="
 mkdir -p openwrt/package/extra
 rm -rf openwrt/package/extra/luci-app-fakemesh
@@ -42,7 +42,7 @@ echo "==== PAUSA PARA HACER make menuconfig ===="
 echo "Abre una terminal, ve a openwrt/, ejecuta 'make menuconfig', selecciona luci-app-fakemesh, guarda y sal, luego vuelve aquí y pulsa ENTER para continuar..."
 read
 
-# 5. Ejecuta el autobuild de MTK (esto puede tardar)
+# 6. Ejecuta el autobuild de MTK (esto puede tardar)
 cd openwrt
 bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988_rfb-mt7996 log_file=make
 cd ..
