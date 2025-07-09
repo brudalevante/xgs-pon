@@ -1,76 +1,86 @@
 #!/bin/bash
-set -ex
+set -e
 
-# 1. Limpieza inicial
-rm -rf openwrt mtk-openwrt-feeds
+#*****************************************************************************
+# Build environment - Ubuntu 64-bit Server 24.04.2
+#
+# sudo apt update
+# sudo apt install build-essential clang flex bison g++ gawk \
+# gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev \
+# python3-setuptools rsync swig unzip zlib1g-dev file wget \
+# libtraceevent-dev systemtap-sdt-dev libslang-dev
+#*****************************************************************************
 
-# 2. Clona OpenWrt y hace checkout del commit deseado
-git clone --branch openwrt-24.10 https://git.openwrt.org/openwrt/openwrt.git openwrt
+# Limpieza previa
+rm -rf openwrt
+rm -rf mtk-openwrt-feeds
+
+# Clona OpenWrt y el feed de Mediatek
+git clone --branch openwrt-24.10 https://git.openwrt.org/openwrt/openwrt.git openwrt || true
 cd openwrt
-git checkout 2a348bdbef52adb99280f01ac285d4415e91f4d6
+git checkout e876f7bc62592ca8bc3125e55936cd0f761f4d5a
 cd ..
 
-# 3. Clona el feed MTK y hace checkout del commit deseado
 git clone https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds || true
 cd mtk-openwrt-feeds
 git checkout 7ab016b920ee13c0c099ab8b57b1774c95609deb
 cd ..
 echo "7ab016b" > mtk-openwrt-feeds/autobuild/unified/feed_revision
 
-# 4. Aplica defconfigs, reglas y parches WiFi
+# Configuración y parches
 cp -r configs/dbg_defconfig_crypto mtk-openwrt-feeds/autobuild/unified/filogic/24.10/defconfig
 cp -r my_files/w-rules mtk-openwrt-feeds/autobuild/unified/filogic/rules
+
+# Parches adicionales
 cp -r my_files/200-wozi-libiwinfo-fix_noise_reading_for_radios.patch openwrt/package/network/utils/iwinfo/patches
 cp -r my_files/99999_tx_power_check.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/files/package/kernel/mt76/patches/
 cp -r my_files/1007-wozi-arch-arm64-dts-mt7988a-add-thermal-zone.patch mtk-openwrt-feeds/24.10/patches-base/
 
+# Desactiva perf en varias configuraciones
 sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/defconfig
 sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/autobuild_5.4_mac80211_release/mt7988_wifi7_mac80211_mlo/.config
 sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/autobuild_5.4_mac80211_release/mt7986_mac80211/.config
 
-# 5. Ejecuta el autobuild de MTK (esto puede tardar)
+# Ejecuta autobuild de MTK
 cd openwrt
 bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988_rfb-mt7996 log_file=make
 cd ..
 
-# 6. Copia tu .config base si hace falta
-cp -r configs/rc1_ext_mm_config openwrt/.config
+# --- FASE POST-AUTOBUILD: Copia de paquetes personalizados y feeds ---
 
-# 7. Copia todos tus paquetes personalizados (después del autobuild y antes de feeds)
-cp -r my_files/luci-app-3ginfo-lite-main/sms-tool/ openwrt/feeds/packages/utils/sms-tool
-cp -r my_files/luci-app-3ginfo-lite-main/luci-app-3ginfo-lite/ openwrt/feeds/luci/applications
-cp -r my_files/luci-app-modemband-main/luci-app-modemband/ openwrt/feeds/luci/applications
-cp -r my_files/luci-app-modemband-main/modemband/ openwrt/feeds/packages/net/modemband
-cp -r my_files/luci-app-at-socat/ openwrt/feeds/luci/applications
-
-# --- BLOQUE NUEVO PARA FAKEMESH ---
-# Limpieza previa de duplicados
-rm -rf openwrt/feeds/luci/applications/luci-app-fakemesh
-rm -rf openwrt/package/luci-app-fakemesh
-
-# Copia el paquete solo a feeds
-cp -r my_files/luci-app-fakemesh/ openwrt/feeds/luci/applications/
-
-# Check de que Makefile está en su sitio
-test -f openwrt/feeds/luci/applications/luci-app-fakemesh/Makefile || { echo "Makefile no encontrado"; exit 1; }
-# --- FIN BLOQUE NUEVO ---
-
-# 8. Actualiza e instala feeds oficiales de OpenWrt
 cd openwrt
+
+# Copia tu .config base si hace falta (puedes comentar esta línea si no quieres sobrescribir)
+cp -r ../configs/rc1_ext_mm_config .config
+
+# Copia todos tus paquetes personalizados
+cp -r ../my_files/luci-app-3ginfo-lite-main/sms-tool/ feeds/packages/utils/sms-tool
+cp -r ../my_files/luci-app-3ginfo-lite-main/luci-app-3ginfo-lite/ feeds/luci/applications
+cp -r ../my_files/luci-app-modemband-main/luci-app-modemband/ feeds/luci/applications
+cp -r ../my_files/luci-app-modemband-main/modemband/ feeds/packages/net/modemband
+cp -r ../my_files/luci-app-at-socat/ feeds/luci/applications
+cp -r ../my_files/luci-app-fakemesh feeds/luci/applications/
+
+# Restaurar automáticamente la configuración anterior si existe
+if [ -f .config.old ]; then
+    echo "Restaurando configuración previa (.config.old)..."
+    cp .config.old .config
+else
+    echo "No existe .config.old, se mantiene la configuración actual"
+fi
+
+# Actualiza feeds
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
-# 9. Haz menuconfig
-echo
-echo "==== PAUSA PARA HACER make menuconfig ===="
-echo "Selecciona tus paquetes personalizados (incluido luci-app-fakemesh), guarda y sal, luego pulsa ENTER para continuar..."
-read
-
-# 10. Refresca dependencias tras menuconfig
+# Prepara la configuración
 make defconfig
 
-# 11. Verifica que tu paquete está en el .config
-grep fakemesh .config || (echo "NO se encontró luci-app-fakemesh en .config" && exit 1)
+# (Opcional) Abre menú de configuración
+# make menuconfig
 
-# 12. Compila
-make -j$(nproc)
+# Compila
+make -j$(nproc) V=s
+
+echo "--------------------------------------"
+echo "Compilación finalizada correctamente."
