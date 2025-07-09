@@ -50,10 +50,7 @@ cd ..
 
 cd openwrt
 
-# Copia tu .config base si hace falta (puedes comentar esta línea si no quieres sobrescribir)
-cp -r ../configs/rc1_ext_mm_config .config
-
-# Copia todos tus paquetes personalizados
+# Copia todos tus paquetes personalizados (asegúrate de que existan antes de instalar feeds)
 cp -r ../my_files/luci-app-3ginfo-lite-main/sms-tool/ feeds/packages/utils/sms-tool
 cp -r ../my_files/luci-app-3ginfo-lite-main/luci-app-3ginfo-lite/ feeds/luci/applications
 cp -r ../my_files/luci-app-modemband-main/luci-app-modemband/ feeds/luci/applications
@@ -61,7 +58,7 @@ cp -r ../my_files/luci-app-modemband-main/modemband/ feeds/packages/net/modemban
 cp -r ../my_files/luci-app-at-socat/ feeds/luci/applications
 cp -r ../my_files/luci-app-fakemesh feeds/luci/applications/
 
-# Restaurar automáticamente la configuración anterior si existe
+# Restaurar automáticamente .config.old si existe (¡antes de tocar feeds o defconfig!)
 if [ -f .config.old ]; then
     echo "Restaurando configuración previa (.config.old)..."
     cp .config.old .config
@@ -69,17 +66,20 @@ else
     echo "No existe .config.old, se mantiene la configuración actual"
 fi
 
-# Actualiza feeds
+# Actualiza feeds (debe ir después de copiar tus paquetes personalizados)
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
-# Prepara la configuración
+# Prepara la configuración para la build
 make defconfig
 
 # (Opcional) Abre menú de configuración
 # make menuconfig
 
-# Compila
+# Comprueba que tu paquete está activado
+grep "CONFIG_PACKAGE_luci-app-fakemesh=y" .config || echo "¡ADVERTENCIA: luci-app-fakemesh NO está activado en .config!"
+
+# Compila con todos los núcleos disponibles
 make -j$(nproc) V=s
 
 echo "--------------------------------------"
