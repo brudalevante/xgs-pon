@@ -19,7 +19,7 @@ rm -rf mtk-openwrt-feeds
 # Clona OpenWrt y MTK feeds
 git clone --branch openwrt-24.10 https://git.openwrt.org/openwrt/openwrt.git openwrt || true
 cd openwrt
-git checkout e876f7bc62592ca8bc3125e55936cd0f761f4d5a
+git checkout 2a348bdbef52adb99280f01ac285d4415e91f4d6
 cd ..
 
 git clone https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds || true
