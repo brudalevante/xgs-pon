@@ -37,13 +37,23 @@ cd ..
 cp -r configs/rc1_ext_mm_config openwrt/.config
 
 # 7. Copia todos tus paquetes personalizados (después del autobuild y antes de feeds)
-# ¡Solo copia la carpeta del paquete, NO toda my_files!
 cp -r my_files/luci-app-3ginfo-lite-main/sms-tool/ openwrt/feeds/packages/utils/sms-tool
 cp -r my_files/luci-app-3ginfo-lite-main/luci-app-3ginfo-lite/ openwrt/feeds/luci/applications
 cp -r my_files/luci-app-modemband-main/luci-app-modemband/ openwrt/feeds/luci/applications
 cp -r my_files/luci-app-modemband-main/modemband/ openwrt/feeds/packages/net/modemband
 cp -r my_files/luci-app-at-socat/ openwrt/feeds/luci/applications
+
+# --- BLOQUE NUEVO PARA FAKEMESH ---
+# Limpieza previa de duplicados
+rm -rf openwrt/feeds/luci/applications/luci-app-fakemesh
+rm -rf openwrt/package/luci-app-fakemesh
+
+# Copia el paquete solo a feeds
 cp -r my_files/luci-app-fakemesh/ openwrt/feeds/luci/applications/
+
+# Check de que Makefile está en su sitio
+test -f openwrt/feeds/luci/applications/luci-app-fakemesh/Makefile || { echo "Makefile no encontrado"; exit 1; }
+# --- FIN BLOQUE NUEVO ---
 
 # 8. Actualiza e instala feeds oficiales de OpenWrt
 cd openwrt
