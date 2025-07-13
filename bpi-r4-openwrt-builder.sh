@@ -22,9 +22,9 @@ cd ..
 echo "==== 2. CLONA MTK FEEDS ===="
 git clone https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds
 cd mtk-openwrt-feeds
-git checkout cc0de566eb90309e997d66ed1095579eb3b30751
+git checkout f737b2f5f33d611f9e96f91ffccd0531700b6282
 cd ..
-echo "cc0de56" > mtk-openwrt-feeds/autobuild/unified/feed_revision
+echo "f737b2f" > mtk-openwrt-feeds/autobuild/unified/feed_revision
 
 echo "==== 3. COPIA CONFIG Y PARCHES ===="
 # Config base y reglas
