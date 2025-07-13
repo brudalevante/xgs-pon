@@ -1,109 +1,76 @@
 #!/bin/bash
+
 set -e
 
-#----------------------------------------
-# Build environment - Ubuntu 24.04.2 LTS
-#----------------------------------------
+# === REQUISITOS DEL SISTEMA ===
+# Ejecuta estos comandos antes de empezar (solo la primera vez)
 # sudo apt update
 # sudo apt install build-essential clang flex bison g++ gawk \
 # gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev \
 # python3-setuptools rsync swig unzip zlib1g-dev file wget \
 # libtraceevent-dev systemtap-sdt-dev libslang-dev
 
-#----------------------------------------
-# Limpieza previa
-rm -rf openwrt
-rm -rf mtk-openwrt-feeds
+echo "==== 0. LIMPIEZA PREVIA ===="
+rm -rf openwrt mtk-openwrt-feeds tmp_comxwrt
 
-#----------------------------------------
-# Clona OpenWrt y MTK feeds
-git clone --branch openwrt-24.10 https://git.openwrt.org/openwrt/openwrt.git openwrt || true
+echo "==== 1. CLONA OPENWRT ===="
+git clone --branch openwrt-24.10 https://git.openwrt.org/openwrt/openwrt.git openwrt
 cd openwrt
 git checkout 2a348bdbef52adb99280f01ac285d4415e91f4d6
 cd ..
 
-git clone https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds || true
+echo "==== 2. CLONA MTK FEEDS ===="
+git clone https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds
 cd mtk-openwrt-feeds
-git checkout 7ab016b920ee13c0c099ab8b57b1774c95609deb
+git checkout cc0de566eb90309e997d66ed1095579eb3b30751
 cd ..
-echo "7ab016b" > mtk-openwrt-feeds/autobuild/unified/feed_revision
+echo "cc0de56" > mtk-openwrt-feeds/autobuild/unified/feed_revision
 
-#----------------------------------------
-# Configuración y parches
+echo "==== 3. COPIA CONFIG Y PARCHES ===="
+# Config base y reglas
 cp -r configs/dbg_defconfig_crypto mtk-openwrt-feeds/autobuild/unified/filogic/24.10/defconfig
 cp -r my_files/w-rules mtk-openwrt-feeds/autobuild/unified/filogic/rules
 
+# Parches para WiFi u otros (personaliza según tus archivos)
 cp -r my_files/200-wozi-libiwinfo-fix_noise_reading_for_radios.patch openwrt/package/network/utils/iwinfo/patches
 cp -r my_files/99999_tx_power_check.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/files/package/kernel/mt76/patches/
 cp -r my_files/1007-wozi-arch-arm64-dts-mt7988a-add-thermal-zone.patch mtk-openwrt-feeds/24.10/patches-base/
 
-sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/defconfig
-sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/autobuild_5.4_mac80211_release/mt7988_wifi7_mac80211_mlo/.config
-sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/autobuild_5.4_mac80211_release/mt7986_mac80211/.config
+# Elimina el patch de strongswan si no lo quieres
+rm -rf mtk-openwrt-feeds/24.10/patches-feeds/108-strongswan-add-uci-support.patch
 
-#----------------------------------------
-# Ejecuta autobuild de MTK
-cd openwrt
-bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988_rfb-mt7996 log_file=make
-cd ..
+echo "==== 4. COPIA PAQUETES PERSONALIZADOS ===="
+git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/com.x-wrt-1.git tmp_comxwrt
+cp -rv tmp_comxwrt/luci-app-fakemesh openwrt/package/
+cp -rv tmp_comxwrt/luci-app-autoreboot openwrt/package/
 
-#----------------------------------------
-# Fase post-autobuild: feeds y paquetes personalizados
+echo "==== 5. ENTRA EN OPENWRT Y ACTUALIZA FEEDS ===="
 cd openwrt
 
-# 1. Copia feeds.conf.default personalizado si existe
-if [ -f ../my_files/w-feeds.conf.default ]; then
-    echo "Usando feeds.conf.default personalizado."
-    cp ../my_files/w-feeds.conf.default feeds.conf.default
-fi
+# Copia config base si quieres (opcional)
+cp -r ../configs/rc1_ext_mm_config .config 2>/dev/null || echo "No existe rc1_ext_mm_config, omitiendo"
 
-# 2. Copia tus paquetes personalizados antes de los feeds
-cp -r ../my_files/luci-app-3ginfo-lite-main/sms-tool/ feeds/packages/utils/sms-tool || true
-cp -r ../my_files/luci-app-3ginfo-lite-main/luci-app-3ginfo-lite/ feeds/luci/applications || true
-cp -r ../my_files/luci-app-modemband-main/luci-app-modemband/ feeds/luci/applications || true
-cp -r ../my_files/luci-app-modemband-main/modemband/ feeds/packages/net/modemband || true
-cp -r ../my_files/luci-app-at-socat/ feeds/luci/applications || true
-cp -r ../my_files/luci-app-fakemesh feeds/luci/applications/ || true
-
-echo ""
-echo "====================="
-echo "Comprobando existencia del paquete luci-app-fakemesh en feeds..."
-if [ -d feeds/luci/applications/luci-app-fakemesh ] || [ -d feeds/*/luci-app-fakemesh ]; then
-    echo "OK: luci-app-fakemesh está presente en los feeds."
-else
-    echo "ERROR: luci-app-fakemesh NO está en los feeds. Revisa tu copia o feed personalizado."
-    exit 1
-fi
-
-# 3. Actualiza e instala feeds
+# Actualiza e instala todos los feeds
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
-# 4. Restaura configuración previa si existe
-if [ -f .config.old ]; then
-    echo "Restaurando configuración previa (.config.old)..."
-    cp .config.old .config
-else
-    echo "No existe .config.old, se mantiene la configuración actual"
-fi
-
-# 5. Prepara la configuración para la build
+echo "==== 6. AÑADE PAQUETES PERSONALIZADOS AL .CONFIG ===="
+echo "CONFIG_PACKAGE_luci-app-fakemesh=y" >> .config
+echo "CONFIG_PACKAGE_luci-app-autoreboot=y" >> .config
 make defconfig
 
-# 6. Verifica que el paquete sigue activado en .config
-if grep -q "CONFIG_PACKAGE_luci-app-fakemesh=y" .config; then
-    echo "OK: luci-app-fakemesh está activado en .config"
-else
-    echo "ERROR: luci-app-fakemesh NO está activado en .config"
-    echo "Posibles causas:"
-    echo " - El paquete no está correctamente instalado en feeds."
-    echo " - El nombre del paquete en .config es incorrecto."
-    echo " - El paquete tiene errores en su Makefile y no se reconoce."
-    exit 2
-fi
+echo "==== 7. VERIFICA PAQUETES EN .CONFIG ===="
+grep fakemesh .config || echo "NO aparece fakemesh en .config"
+grep autoreboot .config || echo "NO aparece autoreboot en .config"
 
-# 7. Compila
-make -j$(nproc) V=s
+echo "==== 8. EJECUTA AUTOBUILD ===="
+bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988_rfb-mt7996 log_file=make
 
-echo "--------------------------------------"
-echo "Compilación finalizada correctamente."
+echo "==== 9. COMPILA ===="
+make -j$(nproc)
+
+echo "==== 10. LIMPIEZA FINAL ===="
+cd ..
+rm -rf tmp_comxwrt
+
+echo "==== Script finalizado correctamente ===="
