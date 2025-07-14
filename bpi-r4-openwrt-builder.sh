@@ -43,6 +43,8 @@ echo "==== 4. COPIA PAQUETES PERSONALIZADOS ===="
 git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/com.x-wrt-1.git tmp_comxwrt
 cp -rv tmp_comxwrt/luci-app-fakemesh openwrt/package/
 cp -rv tmp_comxwrt/luci-app-autoreboot openwrt/package/
+cp -rv tmp_comxwrt/luci-app-cpu-status openwrt/package/
+cp -rv tmp_comxwrt/luci-app-temp-status openwrt/package/
 
 echo "==== 5. ENTRA EN OPENWRT Y ACTUALIZA FEEDS ===="
 cd openwrt
@@ -57,11 +59,15 @@ cp -r ../configs/rc1_ext_mm_config .config 2>/dev/null || echo "No existe rc1_ex
 echo "==== 6. AÑADE PAQUETES PERSONALIZADOS AL .CONFIG ===="
 echo "CONFIG_PACKAGE_luci-app-fakemesh=y" >> .config
 echo "CONFIG_PACKAGE_luci-app-autoreboot=y" >> .config
+echo "CONFIG_PACKAGE_luci-app-cpu-status=y" >> .config
+echo "CONFIG_PACKAGE_luci-app-temp-status=y" >> .config
 make defconfig
 
 echo "==== 7. VERIFICA PAQUETES EN .CONFIG ===="
 grep fakemesh .config || echo "NO aparece fakemesh en .config"
 grep autoreboot .config || echo "NO aparece autoreboot en .config"
+grep cpu-status .config || echo "NO aparece cpu-status en .config"
+grep temp-status .config || echo "NO aparece temp-status en .config"
 
 echo "==== 8. EJECUTA AUTOBUILD ===="
 bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988_rfb-mt7996 log_file=make
