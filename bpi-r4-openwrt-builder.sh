@@ -11,7 +11,7 @@ set -e
 # libtraceevent-dev systemtap-sdt-dev libslang-dev
 
 echo "==== 0. LIMPIEZA PREVIA ===="
-rm -rf openwrt mtk-openwrt-feeds tmp_comxwrt
+rm -rf openwrt mtk-openwrt-feeds
 
 echo "==== 1. CLONA OPENWRT ===="
 git clone --branch openwrt-24.10 https://git.openwrt.org/openwrt/openwrt.git openwrt
@@ -39,12 +39,11 @@ cp -r my_files/1007-wozi-arch-arm64-dts-mt7988a-add-thermal-zone.patch mtk-openw
 # Elimina el patch de strongswan si no lo quieres
 rm -rf mtk-openwrt-feeds/24.10/patches-feeds/108-strongswan-add-uci-support.patch
 
-echo "==== 4. COPIA PAQUETES PERSONALIZADOS ===="
-git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/com.x-wrt-1.git tmp_comxwrt
-cp -rv tmp_comxwrt/luci-app-fakemesh openwrt/package/
-cp -rv tmp_comxwrt/luci-app-autoreboot openwrt/package/
-cp -rv tmp_comxwrt/luci-app-cpu-status openwrt/package/
-cp -rv tmp_comxwrt/luci-app-temp-status openwrt/package/
+echo "==== 4. COPIA PAQUETES PERSONALIZADOS DESDE x-wrt-fakemesh-6g ===="
+cp -rv ../x-wrt-fakemesh-6g/luci-app-fakemesh openwrt/package/
+cp -rv ../x-wrt-fakemesh-6g/luci-app-autoreboot openwrt/package/
+cp -rv ../x-wrt-fakemesh-6g/luci-app-cpu-status openwrt/package/
+cp -rv ../x-wrt-fakemesh-6g/luci-app-temp-status openwrt/package/
 
 echo "==== 5. ENTRA EN OPENWRT Y ACTUALIZA FEEDS ===="
 cd openwrt
@@ -74,9 +73,5 @@ bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988
 
 echo "==== 9. COMPILA ===="
 make -j$(nproc)
-
-echo "==== 10. LIMPIEZA FINAL ===="
-cd ..
-rm -rf tmp_comxwrt
 
 echo "==== Script finalizado correctamente ===="
