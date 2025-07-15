@@ -38,12 +38,14 @@ cp -r my_files/1007-wozi-arch-arm64-dts-mt7988a-add-thermal-zone.patch mtk-openw
 [ -f mtk-openwrt-feeds/24.10/patches-feeds/108-strongswan-add-uci-support.patch ] && \
 rm -rf mtk-openwrt-feeds/24.10/patches-feeds/108-strongswan-add-uci-support.patch
 
-echo "==== 4. CLONAR Y COPIAR PAQUETES PERSONALIZADOS ===="
-git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/x-wrt-fakemesh-6g.git tmp_fakemesh
+echo "==== 4. CLONAR Y COPIAR PAQUETE fakemesh-6g ===="
+git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/fakemesh-6g.git tmp_fakemesh
 cp -rv tmp_fakemesh/luci-app-fakemesh openwrt/package/
-cp -rv tmp_fakemesh/luci-app-autoreboot openwrt/package/
-cp -rv tmp_fakemesh/luci-app-cpu-status openwrt/package/
-cp -rv tmp_fakemesh/luci-app-temp-status openwrt/package/
+
+# Si tienes otros paquetes personalizados, puedes añadirlos aquí:
+# cp -rv tmp_fakemesh/luci-app-autoreboot openwrt/package/
+# cp -rv tmp_fakemesh/luci-app-cpu-status openwrt/package/
+# cp -rv tmp_fakemesh/luci-app-temp-status openwrt/package/
 
 echo "==== 5. ENTRAR EN OPENWRT Y ACTUALIZAR FEEDS ===="
 cd openwrt
@@ -53,16 +55,12 @@ cp -r ../configs/rc1_ext_mm_config .config 2>/dev/null || echo "No existe rc1_ex
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
-echo "==== 6. ACTIVAR PAQUETES PERSONALIZADOS EN .CONFIG ===="
-for pkg in fakemesh autoreboot cpu-status temp-status; do
-    grep "CONFIG_PACKAGE_luci-app-$pkg=y" .config || echo "CONFIG_PACKAGE_luci-app-$pkg=y" >> .config
-done
+echo "==== 6. ACTIVAR PAQUETE fakemesh EN .CONFIG ===="
+grep "CONFIG_PACKAGE_luci-app-fakemesh=y" .config || echo "CONFIG_PACKAGE_luci-app-fakemesh=y" >> .config
 make defconfig
 
-echo "==== 7. VERIFICAR PAQUETES EN .CONFIG ===="
-for pkg in fakemesh autoreboot cpu-status temp-status; do
-    grep $pkg .config || echo "NO aparece $pkg en .config"
-done
+echo "==== 7. VERIFICAR PAQUETE fakemesh EN .CONFIG ===="
+grep fakemesh .config || echo "NO aparece fakemesh en .config"
 
 echo "==== 8. EJECUTAR AUTOBUILD ===="
 bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988_rfb-mt7996 log_file=make
