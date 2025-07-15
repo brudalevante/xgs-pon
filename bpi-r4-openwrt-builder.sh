@@ -67,6 +67,9 @@ done
 echo "==== 8. EJECUTAR AUTOBUILD ===="
 bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988_rfb-mt7996 log_file=make
 
+# ==== ELIMINAR EL WARNING EN ROJO DEL MAKEFILE ====
+sed -i 's/\($(call ERROR_MESSAGE,WARNING: Applying padding.*\)/#\1/' openwrt/package/Makefile
+
 echo "==== 9. COMPILAR OPENWRT ===="
 make -j$(nproc)
 
