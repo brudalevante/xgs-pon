@@ -28,7 +28,7 @@ cp -r my_files/1007-wozi-arch-arm64-dts-mt7988a-add-thermal-zone.patch mtk-openw
 rm -rf mtk-openwrt-feeds/24.10/patches-feeds/108-strongswan-add-uci-support.patch
 
 echo "==== 4. CLONAR Y COPIAR PAQUETES PERSONALIZADOS ===="
-git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/x-wrt-fakemesh-6g.git tmp_fakemesh
+git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/fakemesh-6g.git tmp_fakemesh
 cp -rv tmp_fakemesh/luci-app-fakemesh openwrt/package/
 cp -rv tmp_fakemesh/luci-app-autoreboot openwrt/package/
 cp -rv tmp_fakemesh/luci-app-cpu-status openwrt/package/
@@ -50,7 +50,12 @@ make defconfig
 
 echo "==== 7. VERIFICAR PAQUETES EN .CONFIG ===="
 for pkg in fakemesh autoreboot cpu-status temp-status; do
-    grep $pkg .config || echo "NO aparece $pkg en .config"
+    if grep "CONFIG_PACKAGE_luci-app-$pkg=y" .config; then
+        echo "OK: $pkg activado en .config"
+    else
+        echo "ERROR: $pkg NO está en .config"
+        exit 1
+    fi
 done
 
 echo "==== 8. DESCARGAR FUENTES ===="
@@ -60,10 +65,14 @@ echo "==== 9. EJECUTAR AUTOBUILD ===="
 bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988_rfb-mt7996 log_file=make
 
 echo "==== 10. COMPILAR OPENWRT ===="
-make -j$(nproc) || { echo 'ERROR en compilación'; exit 1; }
+if ! make -j$(nproc); then
+    echo -e "\033[0;31m========== ERROR EN LA COMPILACIÓN ==========\033[0m"
+    echo "Revisa el log de errores anterior ↑ para ver el problema exacto."
+    exit 1
+fi
 
 echo "==== 11. LIMPIEZA FINAL ===="
 cd ..
 rm -rf tmp_fakemesh
 
-echo "==== ¡Script finalizado correctamente! ===="
+echo -e "\033[0;32m==== ¡Script finalizado correctamente! ====\033[0m"
