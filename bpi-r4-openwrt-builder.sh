@@ -1,4 +1,5 @@
 #!/bin/bash
+
 set -e
 
 echo "==== 0. LIMPIEZA PREVIA ===="
@@ -27,12 +28,11 @@ cp -r my_files/1007-wozi-arch-arm64-dts-mt7988a-add-thermal-zone.patch mtk-openw
 [ -f mtk-openwrt-feeds/24.10/patches-feeds/108-strongswan-add-uci-support.patch ] && \
 rm -rf mtk-openwrt-feeds/24.10/patches-feeds/108-strongswan-add-uci-support.patch
 
-echo "==== 4. CLONAR Y COPIAR PAQUETES PERSONALIZADOS ===="
+echo "==== 4. CLONAR Y COPIAR PAQUETES fakemesh-6g ===="
 git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/fakemesh-6g.git tmp_fakemesh
-cp -rv tmp_fakemesh/luci-app-fakemesh openwrt/package/
-cp -rv tmp_fakemesh/luci-app-autoreboot openwrt/package/
-cp -rv tmp_fakemesh/luci-app-cpu-status openwrt/package/
-cp -rv tmp_fakemesh/luci-app-temp-status openwrt/package/
+for pkg in luci-app-fakemesh luci-app-autoreboot luci-app-cpu-status luci-app-temp-status; do
+    cp -rv tmp_fakemesh/$pkg openwrt/package/
+done
 
 echo "==== 5. ENTRAR EN OPENWRT Y ACTUALIZAR FEEDS ===="
 cd openwrt
@@ -64,9 +64,16 @@ make download -j$(nproc)
 echo "==== 9. EJECUTAR AUTOBUILD ===="
 bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988_rfb-mt7996 log_file=make
 
+# ==== ELIMINAR EL WARNING EN ROJO DEL MAKEFILE ====
+sed -i 's/\($(call ERROR_MESSAGE,WARNING: Applying padding.*\)/#\1/' package/Makefile
+
 echo "==== 10. COMPILAR OPENWRT ===="
 if ! make -j$(nproc); then
-    echo -e "\033[0;31m========== ERROR EN LA COMPILACIÓN ==========\033[0m"
+    echo -e "\033[0;31m"
+    echo "==========================================="
+    echo "====   ERROR EN LA COMPILACIÓN (MAKE)  ===="
+    echo "==========================================="
+    echo -e "\033[0m"
     echo "Revisa el log de errores anterior ↑ para ver el problema exacto."
     exit 1
 fi
