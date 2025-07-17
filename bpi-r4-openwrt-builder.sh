@@ -16,7 +16,7 @@ rm -rf openwrt mtk-openwrt-feeds tmp_fakemesh
 echo "==== 1. CLONAR OPENWRT ===="
 git clone --branch openwrt-24.10 https://git.openwrt.org/openwrt/openwrt.git openwrt
 cd openwrt
-git checkout 2a348bdbef52adb99280f01ac285d4415e91f4d6
+git checkout cc932c1ea6258996470b9ea2021b3a38919acd94
 cd ..
 
 echo "==== 2. CLONAR FEEDS MTK ===="
