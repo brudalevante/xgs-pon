@@ -27,16 +27,13 @@ cd ..
 echo "f737b2f" > mtk-openwrt-feeds/autobuild/unified/feed_revision
 
 echo "==== 3. COPIA CONFIG Y PARCHES ===="
-# Config base y reglas
 cp -r configs/dbg_defconfig_crypto mtk-openwrt-feeds/autobuild/unified/filogic/24.10/defconfig
 cp -r my_files/w-rules mtk-openwrt-feeds/autobuild/unified/filogic/rules
 
-# Parches para WiFi u otros (personaliza según tus archivos)
 cp -r my_files/200-wozi-libiwinfo-fix_noise_reading_for_radios.patch openwrt/package/network/utils/iwinfo/patches
 cp -r my_files/99999_tx_power_check.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/files/package/kernel/mt76/patches/
 cp -r my_files/1007-wozi-arch-arm64-dts-mt7988a-add-thermal-zone.patch mtk-openwrt-feeds/24.10/patches-base/
 
-# Elimina el patch de strongswan si no lo quieres
 rm -rf mtk-openwrt-feeds/24.10/patches-feeds/108-strongswan-add-uci-support.patch
 
 echo "==== 4. COPIA PAQUETES PERSONALIZADOS ===="
@@ -49,11 +46,7 @@ cp -rv tmp_comxwrt/luci-app-dawn openwrt/package/
 
 echo "==== 5. ENTRA EN OPENWRT Y ACTUALIZA FEEDS ===="
 cd openwrt
-
-# Copia config base si quieres (opcional)
 cp -r ../configs/rc1_ext_mm_config .config 2>/dev/null || echo "No existe rc1_ext_mm_config, omitiendo"
-
-# Actualiza e instala todos los feeds
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
@@ -66,11 +59,11 @@ echo "CONFIG_PACKAGE_luci-app-dawn=y" >> .config
 make defconfig
 
 echo "==== 7. VERIFICA PAQUETES EN .CONFIG ===="
-grep fakemesh .config || echo "NO aparece fakemesh en .config"
-grep autoreboot .config || echo "NO aparece autoreboot en .config"
-grep cpu-status .config || echo "NO aparece fakemesh en .config"
-grep temp-status .config || echo "NO aparece autoreboot en .config"
-grep dawn .config || echo "NO aparece autoreboot en .config"
+grep fakemesh .config      || echo "NO aparece fakemesh en .config"
+grep autoreboot .config    || echo "NO aparece autoreboot en .config"
+grep cpu-status .config    || echo "NO aparece cpu-status en .config"
+grep temp-status .config   || echo "NO aparece temp-status en .config"
+grep dawn .config          || echo "NO aparece dawn en .config"
 
 echo "==== 8. EJECUTA AUTOBUILD ===="
 bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988_rfb-mt7996 log_file=make
