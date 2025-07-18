@@ -1,27 +1,37 @@
 #!/bin/bash
 
-#*****************************************************************************
-#
-# Build environment - Ubuntu 64-bit Server 24.04.2
-#
-# sudo apt update
-# sudo apt install build-essential clang flex bison g++ gawk \
-# gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev \
-# python3-setuptools rsync swig unzip zlib1g-dev file wget \
-# libtraceevent-dev systemtap-sdt-dev libslang-dev
-#
-#*****************************************************************************
+# ==== Parámetros de reintentos ====
+max_retries=5
+delay=30
 
-rm -rf openwrt
-rm -rf mtk-openwrt-feeds
-rm -rf tmp_comxwrt
+# ==== Función para clonar con reintentos ====
+clone_with_retry() {
+    local repo="$1"
+    local dir="$2"
+    local branch="${3:-main}"
+    local count=0
+    while true; do
+        echo "Intentando clonar $repo rama $branch en $dir (intento $((count+1))/$max_retries)..."
+        git clone --depth=1 --single-branch --branch "$branch" "$repo" "$dir" && break
+        count=$((count+1))
+        if [ "$count" -ge "$max_retries" ]; then
+            echo "Fallo crítico: no se pudo clonar $repo tras $max_retries intentos."
+            exit 1
+        fi
+        echo "Error al clonar $repo, reintentando en $delay segundos..."
+        sleep $delay
+    done
+}
+
+# ==== LIMPIEZA PREVIA ====
+rm -rf openwrt mtk-openwrt-feeds tmp_comxwrt
 
 echo "==== 1. CLONA OPENWRT ===="
-git clone --branch openwrt-24.10 https://git.openwrt.org/openwrt/openwrt.git openwrt || true
+clone_with_retry "https://git.openwrt.org/openwrt/openwrt.git" "openwrt" "openwrt-24.10"
 cd openwrt; git checkout e876f7bc62592ca8bc3125e55936cd0f761f4d5a; cd -;
 
 echo "==== 2. CLONA FEEDS MTK ===="
-git clone  https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds || true
+clone_with_retry "https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds" "mtk-openwrt-feeds"
 cd mtk-openwrt-feeds; git checkout 7ab016b920ee13c0c099ab8b57b1774c95609deb; cd -;
 echo "7ab016b" > mtk-openwrt-feeds/autobuild/unified/feed_revision
 
@@ -51,7 +61,7 @@ sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-f
 sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/autobuild_5.4_mac80211_release/mt7986_mac80211/.config
 
 echo "==== 4. COPIA PAQUETES PERSONALIZADOS ===="
-git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/fakemesh-6g.git tmp_comxwrt
+clone_with_retry "https://github.com/brudalevante/fakemesh-6g.git" "tmp_comxwrt" "main"
 
 if [ -d tmp_comxwrt/luci-app-fakemesh ];    then cp -rv tmp_comxwrt/luci-app-fakemesh    openwrt/package/; fi
 if [ -d tmp_comxwrt/luci-app-autoreboot ];  then cp -rv tmp_comxwrt/luci-app-autoreboot  openwrt/package/; fi
