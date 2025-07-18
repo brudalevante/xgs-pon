@@ -44,7 +44,7 @@ cp -rv tmp_fakemesh/luci-app-fakemesh openwrt/package/
 cp -rv tmp_fakemesh/luci-app-autoreboot openwrt/package/
 cp -rv tmp_fakemesh/luci-app-cpu-status openwrt/package/
 cp -rv tmp_fakemesh/luci-app-temp-status openwrt/package/
-cp -rv tmp_fakemesh/lui-app-dawn openwrt/package/    # <--- AÑADIDO
+cp -rv tmp_fakemesh/lui-app-dawn openwrt/package/   # <-- AÑADIDO
 
 echo "==== 5. ENTRAR EN OPENWRT Y ACTUALIZAR FEEDS ===="
 cd openwrt
