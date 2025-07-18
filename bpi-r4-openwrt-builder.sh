@@ -1,18 +1,22 @@
 #!/bin/bash
 
-# ==== Parámetros de reintentos ====
+# ==== Parámetros para reintentos en git clone ====
 max_retries=5
 delay=30
 
-# ==== Función para clonar con reintentos ====
 clone_with_retry() {
     local repo="$1"
     local dir="$2"
-    local branch="${3:-main}"
+    local branch="$3"
     local count=0
     while true; do
-        echo "Intentando clonar $repo rama $branch en $dir (intento $((count+1))/$max_retries)..."
-        git clone --depth=1 --single-branch --branch "$branch" "$repo" "$dir" && break
+        if [ -z "$branch" ]; then
+            echo "Intentando clonar $repo en $dir (intento $((count+1))/$max_retries)..."
+            git clone --depth=1 --single-branch "$repo" "$dir" && break
+        else
+            echo "Intentando clonar $repo rama $branch en $dir (intento $((count+1))/$max_retries)..."
+            git clone --depth=1 --single-branch --branch "$branch" "$repo" "$dir" && break
+        fi
         count=$((count+1))
         if [ "$count" -ge "$max_retries" ]; then
             echo "Fallo crítico: no se pudo clonar $repo tras $max_retries intentos."
@@ -28,34 +32,34 @@ rm -rf openwrt mtk-openwrt-feeds tmp_comxwrt
 
 echo "==== 1. CLONA OPENWRT ===="
 clone_with_retry "https://git.openwrt.org/openwrt/openwrt.git" "openwrt" "openwrt-24.10"
-cd openwrt; git checkout e876f7bc62592ca8bc3125e55936cd0f761f4d5a; cd -;
+cd openwrt
+# Si da error aquí, el commit ya no existe. Comenta la siguiente línea si falla.
+git checkout e876f7bc62592ca8bc3125e55936cd0f761f4d5a
+cd -
 
 echo "==== 2. CLONA FEEDS MTK ===="
-clone_with_retry "https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds" "mtk-openwrt-feeds"
-cd mtk-openwrt-feeds; git checkout 7ab016b920ee13c0c099ab8b57b1774c95609deb; cd -;
+clone_with_retry "https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds" "mtk-openwrt-feeds" "master"
+cd mtk-openwrt-feeds
+git checkout 7ab016b920ee13c0c099ab8b57b1774c95609deb
+cd -
 echo "7ab016b" > mtk-openwrt-feeds/autobuild/unified/feed_revision
 
 echo "==== 3. COPIA CONFIG Y PARCHES ===="
 \cp -r configs/dbg_defconfig_crypto mtk-openwrt-feeds/autobuild/unified/filogic/24.10/defconfig
 \cp -r my_files/w-rules mtk-openwrt-feeds/autobuild/unified/filogic/rules
 
-# Copia SOLO lo nuevo de etc si existe
 if [ -d my_files/etc ]; then
     echo "Copiando archivos de configuración fija (etc/*) a openwrt/files/etc/"
     mkdir -p openwrt/files/etc
     cp -rv my_files/etc/* openwrt/files/etc/
 fi
 
-# Parche XGS-PON (nuevo)
 cp -v my_files/999-2764-net-phy-sfp-add-some-FS-copper-SFP-fixes.patch mtk-openwrt-feeds/autobuild/unified/filogic/24.10/patches-base/
-
 cp -r my_files/200-wozi-libiwinfo-fix_noise_reading_for_radios.patch openwrt/package/network/utils/iwinfo/patches
 \cp -r my_files/99999_tx_power_check.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/files/package/kernel/mt76/patches/
 \cp -r my_files/1007-wozi-arch-arm64-dts-mt7988a-add-thermal-zone.patch mtk-openwrt-feeds/24.10/patches-base/
-
 rm -rf mtk-openwrt-feeds/24.10/patches-feeds/108-strongswan-add-uci-support.patch 
 
-# Quita el warning "en rojo" de perf en todos los defconfig conocidos
 sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/defconfig
 sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/autobuild_5.4_mac80211_release/mt7988_wifi7_mac80211_mlo/.config
 sed -i 's/CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' mtk-openwrt-feeds/autobuild/autobuild_5.4_mac80211_release/mt7986_mac80211/.config
@@ -75,7 +79,6 @@ cp -r ../configs/rc1_ext_mm_config .config 2>/dev/null || echo "No existe rc1_ex
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
-# ==== ELIMINAR EL WARNING EN ROJO DEL MAKEFILE ====
 sed -i 's/\($(call ERROR_MESSAGE,WARNING: Applying padding.*\)/#\1/' package/Makefile
 
 echo "==== 6. AÑADE PAQUETES PERSONALIZADOS AL .CONFIG ===="
