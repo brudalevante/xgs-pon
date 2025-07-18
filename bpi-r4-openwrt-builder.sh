@@ -55,13 +55,13 @@ cp -r ../configs/rc1_ext_mm_config .config 2>/dev/null || echo "No existe rc1_ex
 ./scripts/feeds install -a
 
 echo "==== 6. ACTIVAR PAQUETES PERSONALIZADOS EN .CONFIG ===="
-for pkg in fakemesh autoreboot cpu-status temp-status dawn; do
+for pkg in fakemesh autoreboot cpu-status temp-status dawn; do   # <-- AÑADIDO dawn
     grep "CONFIG_PACKAGE_luci-app-$pkg=y" .config || echo "CONFIG_PACKAGE_luci-app-$pkg=y" >> .config
 done
 make defconfig
 
 echo "==== 7. VERIFICAR PAQUETES EN .CONFIG ===="
-for pkg in fakemesh autoreboot cpu-status temp-status dawn; do
+for pkg in fakemesh autoreboot cpu-status temp-status dawn; do   # <-- AÑADIDO dawn
     grep $pkg .config || echo "NO aparece $pkg en .config"
 done
 
