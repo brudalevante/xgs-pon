@@ -44,6 +44,7 @@ cp -rv tmp_fakemesh/luci-app-fakemesh openwrt/package/
 cp -rv tmp_fakemesh/luci-app-autoreboot openwrt/package/
 cp -rv tmp_fakemesh/luci-app-cpu-status openwrt/package/
 cp -rv tmp_fakemesh/luci-app-temp-status openwrt/package/
+cp -rv tmp_fakemesh/lui-app-dawn openwrt/package/   # <--- AÑADIDO ESTO
 
 echo "==== 5. ENTRAR EN OPENWRT Y ACTUALIZAR FEEDS ===="
 cd openwrt
@@ -54,13 +55,13 @@ cp -r ../configs/rc1_ext_mm_config .config 2>/dev/null || echo "No existe rc1_ex
 ./scripts/feeds install -a
 
 echo "==== 6. ACTIVAR PAQUETES PERSONALIZADOS EN .CONFIG ===="
-for pkg in fakemesh autoreboot cpu-status temp-status; do
+for pkg in fakemesh autoreboot cpu-status temp-status dawn; do
     grep "CONFIG_PACKAGE_luci-app-$pkg=y" .config || echo "CONFIG_PACKAGE_luci-app-$pkg=y" >> .config
 done
 make defconfig
 
 echo "==== 7. VERIFICAR PAQUETES EN .CONFIG ===="
-for pkg in fakemesh autoreboot cpu-status temp-status; do
+for pkg in fakemesh autoreboot cpu-status temp-status dawn; do
     grep $pkg .config || echo "NO aparece $pkg en .config"
 done
 
