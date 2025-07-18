@@ -1,10 +1,10 @@
 # bpi-r4-openwrt-builder
  
- >git clone ht<span>tps://github.com/brudalevante/fakemesh-2.git
+ >git clone ht<span>tps://github.com/brudalevante/xgs-pon.git
  
- >chmod 776 -R fakemesh-2
+ >chmod 776 -R xgs-pon
  
- >cd fakemesh-2
+ >cd xgs-pon
  
  BEFORE RUNNING BUILDER READ ALL COMMENTS IN THE SCRIPT !
  
