@@ -14,12 +14,14 @@ rm -rf openwrt mtk-openwrt-feeds tmp_comxwrt
 
 echo "==== 1. CLONA OPENWRT ===="
 git clone --branch openwrt-24.10 https://git.openwrt.org/openwrt/openwrt.git openwrt
+cd openwrt
+# Checkout al commit oficial con kernel 6.6.93 (julio 2024, reproducible y estable)
+git checkout e876f7bc62592ca8bc3125e55936cd0f761f4d5a
+cd ..
 
 echo "==== 1.1. COPIA CONFIGURACIÓN PERSONALIZADA ===="
-# Crea la carpeta files si no existe
 mkdir -p openwrt/files
 
-# Copia TODO el contenido de my_files/etc en su sitio (por ejemplo, network y board.json)
 if [ -d my_files/etc ]; then
     echo "Copiando archivos de configuración fija (etc/*) a openwrt/files/etc/"
     mkdir -p openwrt/files/etc
@@ -28,13 +30,11 @@ else
     echo "No se encontró la carpeta my_files/etc/, omitiendo copia de archivos fijos"
 fi
 
-# Copia el resto de archivos personalizados si existen (fuera de etc)
 find my_files -mindepth 1 -maxdepth 1 ! -name 'etc' -exec cp -rv {} openwrt/files/ \;
 
 echo "==== 2. CLONA MTK FEEDS ===="
 git clone https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds
 cd mtk-openwrt-feeds
-# Puedes fijar la revisión si quieres estabilidad, o comentar la siguiente línea para siempre usar HEAD
 git checkout f737b2f5f33d611f9e96f91ffccd0531700b6282
 cd ..
 echo "f737b2f" > mtk-openwrt-feeds/autobuild/unified/feed_revision
