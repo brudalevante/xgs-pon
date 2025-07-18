@@ -50,6 +50,9 @@ cp -r ../configs/rc1_ext_mm_config .config 2>/dev/null || echo "No existe rc1_ex
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
+# ==== ELIMINAR EL WARNING EN ROJO DEL MAKEFILE ====
+sed -i 's/\($(call ERROR_MESSAGE,WARNING: Applying padding.*\)/#\1/' package/Makefile
+
 echo "==== 6. AÑADE PAQUETES PERSONALIZADOS AL .CONFIG ===="
 echo "CONFIG_PACKAGE_luci-app-fakemesh=y" >> .config
 echo "CONFIG_PACKAGE_luci-app-autoreboot=y" >> .config
