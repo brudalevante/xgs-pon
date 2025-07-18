@@ -1,5 +1,4 @@
 #!/bin/bash
-
 set -e
 
 # === REQUISITOS DEL SISTEMA ===
@@ -29,20 +28,42 @@ echo "f737b2f" > mtk-openwrt-feeds/autobuild/unified/feed_revision
 echo "==== 3. COPIA CONFIG Y PARCHES ===="
 cp -r configs/dbg_defconfig_crypto mtk-openwrt-feeds/autobuild/unified/filogic/24.10/defconfig
 cp -r my_files/w-rules mtk-openwrt-feeds/autobuild/unified/filogic/rules
-
 cp -r my_files/200-wozi-libiwinfo-fix_noise_reading_for_radios.patch openwrt/package/network/utils/iwinfo/patches
 cp -r my_files/99999_tx_power_check.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/files/package/kernel/mt76/patches/
 cp -r my_files/1007-wozi-arch-arm64-dts-mt7988a-add-thermal-zone.patch mtk-openwrt-feeds/24.10/patches-base/
-
 rm -rf mtk-openwrt-feeds/24.10/patches-feeds/108-strongswan-add-uci-support.patch
 
 echo "==== 4. COPIA PAQUETES PERSONALIZADOS ===="
 git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/fakemesh-6g.git tmp_comxwrt
-cp -rv tmp_comxwrt/luci-app-fakemesh openwrt/package/
-cp -rv tmp_comxwrt/luci-app-autoreboot openwrt/package/
-cp -rv tmp_comxwrt/luci-app-cpu-status openwrt/package/
-cp -rv tmp_comxwrt/luci-app-temp-status openwrt/package/
-cp -rv tmp_comxwrt/luci-app-dawn openwrt/package/
+
+# Copia luci-app-fakemesh
+if [ -d tmp_comxwrt/luci-app-fakemesh ]; then
+  cp -rv tmp_comxwrt/luci-app-fakemesh openwrt/package/
+fi
+
+# Copia luci-app-autoreboot
+if [ -d tmp_comxwrt/luci-app-autoreboot ]; then
+  cp -rv tmp_comxwrt/luci-app-autoreboot openwrt/package/
+fi
+
+# Copia luci-app-cpu-status
+if [ -d tmp_comxwrt/luci-app-cpu-status ]; then
+  cp -rv tmp_comxwrt/luci-app-cpu-status openwrt/package/
+fi
+
+# Copia luci-app-temp-status
+if [ -d tmp_comxwrt/luci-app-temp-status ]; then
+  cp -rv tmp_comxwrt/luci-app-temp-status openwrt/package/
+fi
+
+# Copia SOLO los recursos de luci-app-dawn si existen
+if [ -d tmp_comxwrt/luci-app-dawn/www/luci-static/resources/view ]; then
+  mkdir -p openwrt/package/luci-app-dawn/www/luci-static/resources/view/
+  cp -rv tmp_comxwrt/luci-app-dawn/www/luci-static/resources/view/* openwrt/package/luci-app-dawn/www/luci-static/resources/view/
+  echo "Copiado luci-app-dawn/www/luci-static/resources/view/"
+else
+  echo "No se encontró luci-app-dawn completo, solo se copiarán vistas si existen."
+fi
 
 echo "==== 5. ENTRA EN OPENWRT Y ACTUALIZA FEEDS ===="
 cd openwrt
