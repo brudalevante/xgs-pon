@@ -56,13 +56,12 @@ if [ -d tmp_comxwrt/luci-app-temp-status ]; then
   cp -rv tmp_comxwrt/luci-app-temp-status openwrt/package/
 fi
 
-# Copia SOLO los recursos de luci-app-dawn si existen
-if [ -d tmp_comxwrt/luci-app-dawn/www/luci-static/resources/view ]; then
-  mkdir -p openwrt/package/luci-app-dawn/www/luci-static/resources/view/
-  cp -rv tmp_comxwrt/luci-app-dawn/www/luci-static/resources/view/* openwrt/package/luci-app-dawn/www/luci-static/resources/view/
-  echo "Copiado luci-app-dawn/www/luci-static/resources/view/"
+# Copia TODA la carpeta luci-app-dawn si existe
+if [ -d tmp_comxwrt/luci-app-dawn ]; then
+  cp -rv tmp_comxwrt/luci-app-dawn openwrt/package/
+  echo "Copiada carpeta completa luci-app-dawn"
 else
-  echo "No se encontró luci-app-dawn completo, solo se copiarán vistas si existen."
+  echo "No se encontró luci-app-dawn, omitiendo copia."
 fi
 
 echo "==== 5. ENTRA EN OPENWRT Y ACTUALIZA FEEDS ===="
