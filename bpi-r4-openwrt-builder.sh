@@ -18,6 +18,12 @@ cd openwrt
 git checkout 2a348bdbef52adb99280f01ac285d4415e91f4d6
 cd ..
 
+echo "==== 1.1. COPIA CONFIGURACIÓN PERSONALIZADA (network y board.json) ===="
+# Crea la carpeta files si no existe
+mkdir -p openwrt/files
+# Copia todo el contenido de my_files (incluyendo etc/config/network y etc/board.json) al árbol de OpenWrt
+cp -r my_files/* openwrt/files/ 2>/dev/null || echo "No hay archivos personalizados para copiar"
+
 echo "==== 2. CLONA MTK FEEDS ===="
 git clone https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds
 cd mtk-openwrt-feeds
