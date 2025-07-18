@@ -2,7 +2,6 @@
 set -e
 
 # === REQUISITOS DEL SISTEMA ===
-# Ejecuta estos comandos antes de empezar (solo la primera vez)
 # sudo apt update
 # sudo apt install build-essential clang flex bison g++ gawk \
 # gcc-multilib g++-multilib gettext git libncurses-dev libssl-dev \
@@ -15,7 +14,6 @@ rm -rf openwrt mtk-openwrt-feeds tmp_comxwrt
 echo "==== 1. CLONA OPENWRT ===="
 git clone --branch openwrt-24.10 https://git.openwrt.org/openwrt/openwrt.git openwrt
 cd openwrt
-# Checkout al commit oficial con kernel 6.6.93 (julio 2024, reproducible y estable)
 git checkout e876f7bc62592ca8bc3125e55936cd0f761f4d5a
 cd ..
 
@@ -42,6 +40,14 @@ echo "f737b2f" > mtk-openwrt-feeds/autobuild/unified/feed_revision
 echo "==== 3. COPIA CONFIG Y PARCHES ===="
 cp -r configs/dbg_defconfig_crypto mtk-openwrt-feeds/autobuild/unified/filogic/24.10/defconfig
 cp -r my_files/w-rules mtk-openwrt-feeds/autobuild/unified/filogic/rules
+
+# Copia parches a la carpeta de parches-base (todos los .patch del directorio my_files/)
+PATCH_DST="mtk-openwrt-feeds/autobuild/unified/filogic/24.10/patches-base"
+mkdir -p "$PATCH_DST"
+for PATCH in my_files/*.patch; do
+    [ -f "$PATCH" ] && cp -v "$PATCH" "$PATCH_DST/"
+done
+
 cp -r my_files/200-wozi-libiwinfo-fix_noise_reading_for_radios.patch openwrt/package/network/utils/iwinfo/patches
 cp -r my_files/99999_tx_power_check.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/files/package/kernel/mt76/patches/
 cp -r my_files/1007-wozi-arch-arm64-dts-mt7988a-add-thermal-zone.patch mtk-openwrt-feeds/24.10/patches-base/
