@@ -43,9 +43,9 @@ echo "==== 4. COPIA PAQUETES PERSONALIZADOS ===="
 git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/fakemesh-6g.git tmp_comxwrt
 cp -rv tmp_comxwrt/luci-app-fakemesh openwrt/package/
 cp -rv tmp_comxwrt/luci-app-autoreboot openwrt/package/
-cp -rv tmp_fakemesh/luci-app-cpu-status openwrt/package/
-cp -rv tmp_fakemesh/luci-app-temp-status openwrt/package/
-cp -rv tmp_fakemesh/luci-app-dawn openwrt/package/ 
+cp -rv tmp_comxwrt/luci-app-cpu-status openwrt/package/
+cp -rv tmp_comxwrt/luci-app-temp-status openwrt/package/
+cp -rv tmp_comxwrt/luci-app-dawn openwrt/package/
 
 echo "==== 5. ENTRA EN OPENWRT Y ACTUALIZA FEEDS ===="
 cd openwrt
