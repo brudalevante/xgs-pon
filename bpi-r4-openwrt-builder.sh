@@ -10,17 +10,17 @@ rm -rf tmp_comxwrt
 echo "==== 2. CLONA REPOS ORIGINALES ===="
 git clone --branch openwrt-24.10 https://git.openwrt.org/openwrt/openwrt.git openwrt || true
 cd openwrt
-git checkout e876f7bc62592ca8bc3125e55936cd0f761f4d5a
+git checkout 2a348bdbef52adb99280f01ac285d4415e91f4d6
 cd ..
 git clone https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds || true
 cd mtk-openwrt-feeds
-git checkout 7ab016b920ee13c0c099ab8b57b1774c95609deb
+git checkout f737b2f5f33d611f9e96f91ffccd0531700b6282
 cd ..
 # ELIMINA TODOS LOS cryptsetup-01-add-host-build.patch EN CUALQUIER SUBCARPETA
 find mtk-openwrt-feeds -name 'cryptsetup-01-add-host-build.patch' -delete
 
 echo "==== 3. PREPARA FEEDS Y CONFIGURACIONES BASE ===="
-echo "7ab016b" > mtk-openwrt-feeds/autobuild/unified/feed_revision
+echo "f737b2f" > mtk-openwrt-feeds/autobuild/unified/feed_revision
 cp -r configs/dbg_defconfig_crypto mtk-openwrt-feeds/autobuild/unified/filogic/24.10/defconfig
 
 # Desactiva perf
