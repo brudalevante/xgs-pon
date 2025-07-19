@@ -48,6 +48,10 @@ cp -rv tmp_comxwrt/luci-app-dawn openwrt/package/
 # Paquete xgs-pon desde tu carpeta local
 cp -rv my_files/xgs-pon openwrt/package/
 
+echo "==== 5b. COPIA ARCHIVOS DE CONFIGURACION DE RED (ETC) ===="
+mkdir -p openwrt/files/etc
+cp -r my_files/etc/* openwrt/files/etc/
+
 echo "==== 6. ENTRA EN OPENWRT Y ACTUALIZA FEEDS ===="
 cd openwrt
 cp -r ../configs/rc1_ext_mm_config .config 2>/dev/null || echo "No existe rc1_ext_mm_config, omitiendo"
