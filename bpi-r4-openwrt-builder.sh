@@ -17,6 +17,12 @@ git checkout f737b2f5f33d611f9e96f91ffccd0531700b6282
 cd ..
 echo "f737b2f" > mtk-openwrt-feeds/autobuild/unified/feed_revision
 
+# ==== ELIMINAR PARCHE PROBLEMÁTICO DE CRYPTSETUP ====
+if [ -f mtk-openwrt-feeds/autobuild/unified/filogic/24.10/patches-feeds/cryptsetup-01-add-host-build.patch ]; then
+    echo "Eliminando parche conflictivo de cryptsetup..."
+    rm -f mtk-openwrt-feeds/autobuild/unified/filogic/24.10/patches-feeds/cryptsetup-01-add-host-build.patch
+fi
+
 echo "==== 3. COPIAR CONFIG Y REGLAS ===="
 cp -r configs/dbg_defconfig_crypto mtk-openwrt-feeds/autobuild/unified/filogic/24.10/defconfig
 cp -r my_files/w-rules mtk-openwrt-feeds/autobuild/unified/filogic/rules
