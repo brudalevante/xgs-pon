@@ -45,8 +45,6 @@ cp -rv tmp_comxwrt/luci-app-autoreboot openwrt/package/
 cp -rv tmp_comxwrt/luci-app-cpu-status openwrt/package/
 cp -rv tmp_comxwrt/luci-app-temp-status openwrt/package/
 cp -rv tmp_comxwrt/luci-app-dawn openwrt/package/
-# Paquete xgs-pon desde tu carpeta local
-cp -rv my_files/xgs-pon openwrt/package/
 
 echo "==== 5b. COPIA ARCHIVOS DE CONFIGURACION DE RED (ETC) ===="
 mkdir -p openwrt/files/etc
@@ -64,7 +62,6 @@ echo "CONFIG_PACKAGE_luci-app-autoreboot=y" >> .config
 echo "CONFIG_PACKAGE_luci-app-cpu-status=y" >> .config
 echo "CONFIG_PACKAGE_luci-app-temp-status=y" >> .config
 echo "CONFIG_PACKAGE_luci-app-dawn=y" >> .config
-echo "CONFIG_PACKAGE_xgs-pon=y" >> .config
 make defconfig
 
 echo "==== 8. VERIFICA PAQUETES EN .CONFIG ===="
@@ -73,7 +70,6 @@ grep autoreboot .config    || echo "NO aparece autoreboot en .config"
 grep cpu-status .config    || echo "NO aparece cpu-status en .config"
 grep temp-status .config   || echo "NO aparece temp-status en .config"
 grep dawn .config          || echo "NO aparece dawn en .config"
-grep xgs-pon .config       || echo "NO aparece xgs-pon en .config"
 
 echo "==== 9. EJECUTA AUTOBUILD ===="
 bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988_rfb-mt7996 log_file=make
