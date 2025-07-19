@@ -34,7 +34,7 @@ cp -r my_files/200-wozi-libiwinfo-fix_noise_reading_for_radios.patch openwrt/pac
 cp -r my_files/99999_tx_power_check.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/files/package/kernel/mt76/patches/
 cp -r my_files/1007-wozi-arch-arm64-dts-mt7988a-add-thermal-zone.patch mtk-openwrt-feeds/24.10/patches-base/
 
-# Nuevo: Copia el parche xgspon si existe
+# Parche xgspon si existe
 if [ -f my_files/999-2764-net-phy-sfp-add-some-FS-copper-SFP-fixes.patch ]; then
     mkdir -p openwrt/package/xgspon/patches
     cp my_files/999-2764-net-phy-sfp-add-some-FS-copper-SFP-fixes.patch openwrt/package/xgspon/patches/
@@ -42,10 +42,10 @@ fi
 
 rm -rf mtk-openwrt-feeds/24.10/patches-feeds/108-strongswan-add-uci-support.patch
 
-# Nuevo: Copia la configuración de red (etc/network, etc)
+# Copia la configuración de red solo si hay archivos nuevos o diferentes
 if [ -d my_files/etc ]; then
     echo "Copiando configuración de red personalizada my_files/etc/* a openwrt/files/etc/"
-    cp -rv my_files/etc/* openwrt/files/etc/
+    rsync -a --ignore-existing my_files/etc/ openwrt/files/etc/
 fi
 
 echo "==== 4. COPIA PAQUETES PERSONALIZADOS ===="
@@ -62,20 +62,20 @@ cp -r ../configs/rc1_ext_mm_config .config 2>/dev/null || echo "No existe rc1_ex
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
-echo "==== 6. AÑADE PAQUETES PERSONALIZADOS AL .CONFIG ===="
-echo "CONFIG_PACKAGE_luci-app-fakemesh=y" >> .config
-echo "CONFIG_PACKAGE_luci-app-autoreboot=y" >> .config
-echo "CONFIG_PACKAGE_luci-app-cpu-status=y" >> .config
-echo "CONFIG_PACKAGE_luci-app-temp-status=y" >> .config
-echo "CONFIG_PACKAGE_luci-app-dawn=y" >> .config
+echo "==== 6. AÑADE PAQUETES PERSONALIZADOS AL .CONFIG SIN DUPLICADOS ===="
+for pkg in fakemesh autoreboot cpu-status temp-status dawn; do
+    grep -q "CONFIG_PACKAGE_luci-app-$pkg=y" .config || echo "CONFIG_PACKAGE_luci-app-$pkg=y" >> .config
+done
 make defconfig
 
 echo "==== 7. VERIFICA PAQUETES EN .CONFIG ===="
-grep fakemesh .config      || echo "NO aparece fakemesh en .config"
-grep autoreboot .config    || echo "NO aparece autoreboot en .config"
-grep cpu-status .config    || echo "NO aparece cpu-status en .config"
-grep temp-status .config   || echo "NO aparece temp-status en .config"
-grep dawn .config          || echo "NO aparece dawn en .config"
+for pkg in fakemesh autoreboot cpu-status temp-status dawn; do
+    if grep -q "CONFIG_PACKAGE_luci-app-$pkg=y" .config; then
+        echo "OK: $pkg activado en .config"
+    else
+        echo "NO aparece $pkg en .config"
+    fi
+done
 
 echo "==== 8. EJECUTA AUTOBUILD ===="
 bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988_rfb-mt7996 log_file=make
