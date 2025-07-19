@@ -16,8 +16,9 @@ git clone https://git01.mediatek.com/openwrt/feeds/mtk-openwrt-feeds || true
 cd mtk-openwrt-feeds
 git checkout f737b2f5f33d611f9e96f91ffccd0531700b6282
 cd ..
-# ELIMINA TODOS LOS cryptsetup-01-add-host-build.patch EN CUALQUIER SUBCARPETA
-find mtk-openwrt-feeds -name 'cryptsetup-01-add-host-build.patch' -delete
+
+echo "==== ELIMINA TODOS LOS PARCHES CONFLICTIVOS DE cryptsetup ===="
+find mtk-openwrt-feeds -type f -name 'cryptsetup-*.patch' -delete
 
 echo "==== 3. PREPARA FEEDS Y CONFIGURACIONES BASE ===="
 echo "f737b2f" > mtk-openwrt-feeds/autobuild/unified/feed_revision
