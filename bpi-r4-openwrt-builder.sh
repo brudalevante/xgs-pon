@@ -117,9 +117,10 @@ grep dawn .config          || echo "NO aparece dawn en .config"
 echo "==== 9. EJECUTA AUTOBUILD ===="
 bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988_rfb-mt7996 log_file=make
 
-# ===== PARCHEA ERROR RUNC PATCHES FALTANTE =====
-echo "==== 9b. CREA CARPETA PATCHES VACÍA PARA RUNC SI FALTA ===="
+# ===== PARCHEA ERROR PATCHES FALTANTE =====
+echo "==== 9b. CREA CARPETAS PATCHES VACÍAS PARA RUNC Y CONMON SI FALTAN ===="
 mkdir -p package/feeds/packages/runc/patches
+mkdir -p package/feeds/packages/conmon/patches
 
 echo "==== 10. COMPILA ===="
 make -j$(nproc)
