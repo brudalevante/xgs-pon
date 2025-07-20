@@ -3,9 +3,7 @@
 set -e
 
 echo "==== 1. LIMPIEZA ===="
-rm -rf openwrt
-rm -rf mtk-openwrt-feeds
-rm -rf tmp_comxwrt
+rm -rf openwrt mtk-openwrt-feeds tmp_comxwrt
 
 echo "==== 2. CLONA TUS REPOS PERSONALES ===="
 git clone --branch openwrt-24.10 https://github.com/brudalevante/openwrt.git openwrt || true
@@ -56,10 +54,25 @@ cp -r my_files/etc/* openwrt/files/etc/
 echo "==== 6. ENTRA EN OPENWRT Y ACTUALIZA FEEDS ===="
 cd openwrt
 
+# Reemplaza feeds.conf.default por tus feeds SIEMPRE
+cat > feeds.conf.default <<EOF
+src-git packages https://github.com/brudalevante/packages.git
+src-git luci https://github.com/brudalevante/luci.git
+src-git routing https://github.com/brudalevante/routing.git
+src-git telephony https://github.com/brudalevante/telephony.git
+EOF
+
 echo "==== COMPROBANDO feeds.conf.default ===="
 cat feeds.conf.default
 grep brudalevante feeds.conf.default && echo "OK: Se usarán tus feeds" || echo "ATENCIÓN: No se encuentran tus feeds, revisar archivo"
+
 cp -r ../configs/rc1_ext_mm_config .config 2>/dev/null || echo "No existe rc1_ext_mm_config, omitiendo"
+
+# Limpia perf en .config ANTES de feeds/install
+sed -i '/^CONFIG_PACKAGE_perf=y/d' .config
+sed -i '/^# CONFIG_PACKAGE_perf is not set/d' .config
+echo "# CONFIG_PACKAGE_perf is not set" >> .config
+
 ./scripts/feeds update -a
 ./scripts/feeds install -a
 
@@ -71,12 +84,20 @@ echo "CONFIG_PACKAGE_luci-app-temp-status=y" >> .config
 echo "CONFIG_PACKAGE_luci-app-dawn=y" >> .config
 echo "CONFIG_PACKAGE_luci-app-usteer=y" >> .config
 
+# Limpia perf OTRA VEZ antes de make defconfig
+sed -i '/^CONFIG_PACKAGE_perf=y/d' .config
+sed -i '/^# CONFIG_PACKAGE_perf is not set/d' .config
+echo "# CONFIG_PACKAGE_perf is not set" >> .config
+
 make defconfig
 
-# ==== BLOQUE CRÍTICO: Desactiva perf después de make defconfig ====
+# Limpia perf DESPUÉS de make defconfig (por si acaso)
 sed -i '/^CONFIG_PACKAGE_perf=y/d' .config
+sed -i '/^# CONFIG_PACKAGE_perf is not set/d' .config
 echo "# CONFIG_PACKAGE_perf is not set" >> .config
-# ================================================================
+
+echo "==== VERIFICACIÓN PERF FINAL ===="
+grep perf .config || echo "perf NO está en .config"
 
 echo "==== 8. VERIFICA PAQUETES EN .CONFIG ===="
 grep fakemesh .config      || echo "NO aparece fakemesh en .config"
@@ -87,8 +108,8 @@ grep dawn .config          || echo "NO aparece dawn en .config"
 grep usteer .config        || echo "NO aparece usteer en .config"
 
 echo "==== 9. AÑADE SEGURIDAD: DESACTIVA PERF EN EL .CONFIG FINAL ===="
-# (esto ya está hecho, pero lo puedes dejar por seguridad)
 sed -i '/^CONFIG_PACKAGE_perf=y/d' .config
+sed -i '/^# CONFIG_PACKAGE_perf is not set/d' .config
 echo "# CONFIG_PACKAGE_perf is not set" >> .config
 
 echo "==== 10. EJECUTA AUTOBUILD ===="
