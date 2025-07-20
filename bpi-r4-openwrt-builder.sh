@@ -41,13 +41,13 @@ cp -r my_files/999-2764-net-phy-sfp-add-some-FS-copper-SFP-fixes.patch openwrt/t
 # cp -r my_files/99999_tx_power_check_by_dan_pawlik.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/files/package/kernel/mt76/patches/
 
 echo "==== 5. COPIA PAQUETES PERSONALIZADOS ===="
-# Paquetes de fakemesh y otros desde el repo
 git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/fakemesh-6g.git tmp_comxwrt
 cp -rv tmp_comxwrt/luci-app-fakemesh openwrt/package/
 cp -rv tmp_comxwrt/luci-app-autoreboot openwrt/package/
 cp -rv tmp_comxwrt/luci-app-cpu-status openwrt/package/
 cp -rv tmp_comxwrt/luci-app-temp-status openwrt/package/
 cp -rv tmp_comxwrt/luci-app-dawn openwrt/package/
+cp -rv tmp_comxwrt/luci-app-usteer openwrt/package/
 
 echo "==== 5b. COPIA ARCHIVOS DE CONFIGURACION DE RED (ETC) ===="
 mkdir -p openwrt/files/etc
@@ -65,6 +65,7 @@ echo "CONFIG_PACKAGE_luci-app-autoreboot=y" >> .config
 echo "CONFIG_PACKAGE_luci-app-cpu-status=y" >> .config
 echo "CONFIG_PACKAGE_luci-app-temp-status=y" >> .config
 echo "CONFIG_PACKAGE_luci-app-dawn=y" >> .config
+echo "CONFIG_PACKAGE_luci-app-usteer=y" >> .config
 make defconfig
 
 echo "==== 8. VERIFICA PAQUETES EN .CONFIG ===="
@@ -73,6 +74,7 @@ grep autoreboot .config    || echo "NO aparece autoreboot en .config"
 grep cpu-status .config    || echo "NO aparece cpu-status en .config"
 grep temp-status .config   || echo "NO aparece temp-status en .config"
 grep dawn .config          || echo "NO aparece dawn en .config"
+grep usteer .config        || echo "NO aparece usteer en .config"
 
 echo "==== 9. AÑADE SEGURIDAD: DESACTIVA PERF EN EL .CONFIG FINAL ===="
 sed -i 's/^CONFIG_PACKAGE_perf=y/# CONFIG_PACKAGE_perf is not set/' .config
