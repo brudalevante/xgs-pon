@@ -55,6 +55,12 @@ cp -r my_files/etc/* openwrt/files/etc/
 
 echo "==== 6. ENTRA EN OPENWRT Y ACTUALIZA FEEDS ===="
 cd openwrt
+
+# ------ BLOQUE DE VERIFICACION DE FEEDS ------
+echo "==== COMPROBANDO feeds.conf.default ===="
+cat feeds.conf.default
+grep brudalevante feeds.conf.default && echo "OK: Se usarán tus feeds" || echo "ATENCIÓN: No se encuentran tus feeds, revisar archivo"
+# ------ FIN BLOQUE DE VERIFICACION DE FEEDS ------
 cp -r ../configs/rc1_ext_mm_config .config 2>/dev/null || echo "No existe rc1_ext_mm_config, omitiendo"
 ./scripts/feeds update -a
 ./scripts/feeds install -a
