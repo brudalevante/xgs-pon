@@ -24,7 +24,7 @@ echo "==== 3. PREPARA FEEDS Y CONFIGURACIONES BASE ===="
 echo "cc0de56" > mtk-openwrt-feeds/autobuild/unified/feed_revision
 cp -r configs/dbg_defconfig_crypto mtk-openwrt-feeds/autobuild/unified/filogic/24.10/defconfig
 
-# Desactiva perf
+# Desactiva perf en los defconfig base
 sed -i '/^CONFIG_PACKAGE_perf=y/d' mtk-openwrt-feeds/autobuild/unified/filogic/24.10/defconfig
 sed -i '/^CONFIG_PACKAGE_perf=y/d' mtk-openwrt-feeds/autobuild/autobuild_5.4_mac80211_release/mt7988_wifi7_mac80211_mlo/.config
 sed -i '/^CONFIG_PACKAGE_perf=y/d' mtk-openwrt-feeds/autobuild/autobuild_5.4_mac80211_release/mt7986_mac80211/.config
@@ -56,11 +56,9 @@ cp -r my_files/etc/* openwrt/files/etc/
 echo "==== 6. ENTRA EN OPENWRT Y ACTUALIZA FEEDS ===="
 cd openwrt
 
-# ------ BLOQUE DE VERIFICACION DE FEEDS ------
 echo "==== COMPROBANDO feeds.conf.default ===="
 cat feeds.conf.default
 grep brudalevante feeds.conf.default && echo "OK: Se usarán tus feeds" || echo "ATENCIÓN: No se encuentran tus feeds, revisar archivo"
-# ------ FIN BLOQUE DE VERIFICACION DE FEEDS ------
 cp -r ../configs/rc1_ext_mm_config .config 2>/dev/null || echo "No existe rc1_ext_mm_config, omitiendo"
 ./scripts/feeds update -a
 ./scripts/feeds install -a
@@ -72,7 +70,13 @@ echo "CONFIG_PACKAGE_luci-app-cpu-status=y" >> .config
 echo "CONFIG_PACKAGE_luci-app-temp-status=y" >> .config
 echo "CONFIG_PACKAGE_luci-app-dawn=y" >> .config
 echo "CONFIG_PACKAGE_luci-app-usteer=y" >> .config
+
 make defconfig
+
+# ==== BLOQUE CRÍTICO: Desactiva perf después de make defconfig ====
+sed -i '/^CONFIG_PACKAGE_perf=y/d' .config
+echo "# CONFIG_PACKAGE_perf is not set" >> .config
+# ================================================================
 
 echo "==== 8. VERIFICA PAQUETES EN .CONFIG ===="
 grep fakemesh .config      || echo "NO aparece fakemesh en .config"
@@ -83,6 +87,7 @@ grep dawn .config          || echo "NO aparece dawn en .config"
 grep usteer .config        || echo "NO aparece usteer en .config"
 
 echo "==== 9. AÑADE SEGURIDAD: DESACTIVA PERF EN EL .CONFIG FINAL ===="
+# (esto ya está hecho, pero lo puedes dejar por seguridad)
 sed -i '/^CONFIG_PACKAGE_perf=y/d' .config
 echo "# CONFIG_PACKAGE_perf is not set" >> .config
 
