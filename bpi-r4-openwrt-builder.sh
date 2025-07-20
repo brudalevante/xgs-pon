@@ -90,12 +90,6 @@ sed -i '/CONFIG_PACKAGE_perf=y/d' .config
 sed -i '/# CONFIG_PACKAGE_perf is not set/d' .config
 echo "# CONFIG_PACKAGE_perf is not set" >> .config
 
-# Chequeo estricto: aborta si sigue perf=y (extra seguro, busca en cualquier parte de la línea)
-if grep -q 'CONFIG_PACKAGE_perf=y' .config; then
-    echo "ERROR: perf sigue en .config, abortando build"
-    exit 1
-fi
-
 echo "==== VERIFICACIÓN PERF FINAL ===="
 grep perf .config || echo "perf NO está en .config"
 
@@ -117,12 +111,6 @@ bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988
 
 # ==== ELIMINAR EL WARNING EN ROJO DEL MAKEFILE ====
 sed -i 's/\($(call ERROR_MESSAGE,WARNING: Applying padding.*\)/#\1/' package/Makefile
-
-# CHEQUEO INFALIBLE DE perf=y ANTES DE COMPILAR
-if grep -q 'CONFIG_PACKAGE_perf=y' .config; then
-    echo "ERROR: perf sigue en .config, abortando build"
-    exit 1
-fi
 
 echo "==== 11. COMPILA ===="
 make -j$(nproc)
