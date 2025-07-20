@@ -51,24 +51,14 @@ echo "==== 5b. COPIA ARCHIVOS DE CONFIGURACION DE RED (ETC) ===="
 mkdir -p openwrt/files/etc
 cp -r my_files/etc/* openwrt/files/etc/
 
-echo "==== 6. ENTRA EN OPENWRT Y PREPARA FEEDS ===="
+echo "==== 6. ENTRA EN OPENWRT Y USA feeds.conf.default OFICIAL ===="
 cd openwrt
 
-echo "==== LIMPIANDO feeds.conf.default y feeds/ previos ===="
-rm -f feeds.conf.default
+echo "==== LIMPIANDO feeds/ previos ===="
 rm -rf feeds/
 
-echo "==== ESCRIBIENDO feeds.conf.default SOLO CON TUS FEEDS ===="
-cat > feeds.conf.default <<EOF
-src-git packages https://github.com/brudalevante/packages.git
-src-git luci https://github.com/brudalevante/luci.git
-src-git routing https://github.com/brudalevante/routing.git
-src-git telephony https://github.com/brudalevante/telephony.git
-EOF
-
-echo "==== COMPROBANDO feeds.conf.default ===="
+echo "==== USANDO feeds.conf.default DEL REPO (OFICIAL) ===="
 cat feeds.conf.default
-grep brudalevante feeds.conf.default && echo "OK: Se usarán tus feeds" || echo "ATENCIÓN: No se encuentran tus feeds, revisar archivo"
 
 cp -r ../configs/rc1_ext_mm_config .config 2>/dev/null || echo "No existe rc1_ext_mm_config, omitiendo"
 
