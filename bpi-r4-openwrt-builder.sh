@@ -8,7 +8,7 @@ rm -rf openwrt mtk-openwrt-feeds tmp_comxwrt
 echo "==== 2. CLONA TUS REPOS PERSONALES ===="
 git clone --branch openwrt-24.10 https://github.com/brudalevante/openwrt.git openwrt || true
 cd openwrt
-git checkout bb59922007043c0a0813d62b0d9f6e801caff9df
+git checkout 2a348bdbef52adb99280f01ac285d4415e91f4d6
 cd ..
 git clone https://github.com/brudalevante/mtk-openwrt-feeds.git || true
 cd mtk-openwrt-feeds
