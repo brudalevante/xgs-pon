@@ -51,10 +51,14 @@ echo "==== 5b. COPIA ARCHIVOS DE CONFIGURACION DE RED (ETC) ===="
 mkdir -p openwrt/files/etc
 cp -r my_files/etc/* openwrt/files/etc/
 
-echo "==== 6. ENTRA EN OPENWRT Y ACTUALIZA FEEDS ===="
+echo "==== 6. ENTRA EN OPENWRT Y PREPARA FEEDS ===="
 cd openwrt
 
-# Reemplaza feeds.conf.default por tus feeds SIEMPRE
+echo "==== LIMPIANDO feeds.conf.default y feeds/ previos ===="
+rm -f feeds.conf.default
+rm -rf feeds/
+
+echo "==== ESCRIBIENDO feeds.conf.default SOLO CON TUS FEEDS ===="
 cat > feeds.conf.default <<EOF
 src-git packages https://github.com/brudalevante/packages.git
 src-git luci https://github.com/brudalevante/luci.git
