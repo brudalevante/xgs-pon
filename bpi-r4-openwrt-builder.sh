@@ -63,8 +63,8 @@ cat feeds.conf.default
 cp -r ../configs/rc1_ext_mm_config .config 2>/dev/null || echo "No existe rc1_ext_mm_config, omitiendo"
 
 # Limpia perf en .config ANTES de feeds/install
-sed -i '/^CONFIG_PACKAGE_perf=y/d' .config
-sed -i '/^# CONFIG_PACKAGE_perf is not set/d' .config
+sed -i '/CONFIG_PACKAGE_perf=y/d' .config
+sed -i '/# CONFIG_PACKAGE_perf is not set/d' .config
 echo "# CONFIG_PACKAGE_perf is not set" >> .config
 
 ./scripts/feeds update -a
@@ -79,19 +79,19 @@ echo "CONFIG_PACKAGE_luci-app-dawn=y" >> .config
 echo "CONFIG_PACKAGE_luci-app-usteer=y" >> .config
 
 # Limpia perf OTRA VEZ antes de make defconfig
-sed -i '/^CONFIG_PACKAGE_perf=y/d' .config
-sed -i '/^# CONFIG_PACKAGE_perf is not set/d' .config
+sed -i '/CONFIG_PACKAGE_perf=y/d' .config
+sed -i '/# CONFIG_PACKAGE_perf is not set/d' .config
 echo "# CONFIG_PACKAGE_perf is not set" >> .config
 
 make defconfig
 
 # Limpia perf DESPUÉS de make defconfig (por si acaso)
-sed -i '/^CONFIG_PACKAGE_perf=y/d' .config
-sed -i '/^# CONFIG_PACKAGE_perf is not set/d' .config
+sed -i '/CONFIG_PACKAGE_perf=y/d' .config
+sed -i '/# CONFIG_PACKAGE_perf is not set/d' .config
 echo "# CONFIG_PACKAGE_perf is not set" >> .config
 
-# Chequeo estricto: aborta si sigue perf=y
-if grep -q "^CONFIG_PACKAGE_perf=y" .config; then
+# Chequeo estricto: aborta si sigue perf=y (extra seguro, busca en cualquier parte de la línea)
+if grep -q 'CONFIG_PACKAGE_perf=y' .config; then
     echo "ERROR: perf sigue en .config, abortando build"
     exit 1
 fi
@@ -108,8 +108,8 @@ grep dawn .config          || echo "NO aparece dawn en .config"
 grep usteer .config        || echo "NO aparece usteer en .config"
 
 echo "==== 9. AÑADE SEGURIDAD: DESACTIVA PERF EN EL .CONFIG FINAL (por si acaso) ===="
-sed -i '/^CONFIG_PACKAGE_perf=y/d' .config
-sed -i '/^# CONFIG_PACKAGE_perf is not set/d' .config
+sed -i '/CONFIG_PACKAGE_perf=y/d' .config
+sed -i '/# CONFIG_PACKAGE_perf is not set/d' .config
 echo "# CONFIG_PACKAGE_perf is not set" >> .config
 
 echo "==== 10. EJECUTA AUTOBUILD ===="
@@ -117,6 +117,12 @@ bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988
 
 # ==== ELIMINAR EL WARNING EN ROJO DEL MAKEFILE ====
 sed -i 's/\($(call ERROR_MESSAGE,WARNING: Applying padding.*\)/#\1/' package/Makefile
+
+# CHEQUEO INFALIBLE DE perf=y ANTES DE COMPILAR
+if grep -q 'CONFIG_PACKAGE_perf=y' .config; then
+    echo "ERROR: perf sigue en .config, abortando build"
+    exit 1
+fi
 
 echo "==== 11. COMPILA ===="
 make -j$(nproc)
