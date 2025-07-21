@@ -47,9 +47,6 @@ cp -rv tmp_comxwrt/luci-app-temp-status openwrt/package/
 cp -rv tmp_comxwrt/luci-app-dawn openwrt/package/
 cp -rv tmp_comxwrt/luci-app-usteer openwrt/package/
 
-echo "==== 5b. COPIA ARCHIVOS DE CONFIGURACION DE RED (ETC) ===="
-mkdir -p openwrt/files/etc
-cp -r my_files/etc/* openwrt/files/etc/
 
 echo "==== 6. ENTRA EN OPENWRT Y USA feeds.conf.default OFICIAL ===="
 cd openwrt
