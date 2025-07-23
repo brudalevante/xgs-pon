@@ -109,6 +109,11 @@ bash ../mtk-openwrt-feeds/autobuild/unified/autobuild.sh filogic-mac80211-mt7988
 # ==== ELIMINAR EL WARNING EN ROJO DEL MAKEFILE ====
 sed -i 's/\($(call ERROR_MESSAGE,WARNING: Applying padding.*\)/#\1/' package/Makefile
 
+echo "==== ELIMINA WARNING SHA-512 DE scripts/ipkg-make-index.sh ===="
+if grep -q "WARNING: Applying padding" scripts/ipkg-make-index.sh; then
+    sed -i '/WARNING: Applying padding/d' scripts/ipkg-make-index.sh
+fi
+
 echo "==== 11. COMPILA ===="
 make -j$(nproc)
 
