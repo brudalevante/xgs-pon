@@ -2788,7 +2788,6 @@ CONFIG_PACKAGE_ubusd=y
 # CONFIG_PACKAGE_ucert=y
 # CONFIG_PACKAGE_ucert-full=y
 CONFIG_PACKAGE_uci=y
-CONFIG_MARCHO=y
 # CONFIG_PACKAGE_uencrypt-mbedtls=y
 # CONFIG_PACKAGE_uencrypt-openssl=y
 # CONFIG_PACKAGE_uencrypt-wolfssl=y
