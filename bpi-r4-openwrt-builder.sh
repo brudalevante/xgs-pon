@@ -47,7 +47,6 @@ cp -rv tmp_comxwrt/luci-app-temp-status openwrt/package/
 cp -rv tmp_comxwrt/luci-app-dawn2 openwrt/package/
 cp -rv tmp_comxwrt/luci-app-usteer2 openwrt/package/
 
-
 echo "==== 6. ENTRA EN OPENWRT Y USA feeds.conf.default OFICIAL ===="
 cd openwrt
 
@@ -112,6 +111,14 @@ sed -i 's/\($(call ERROR_MESSAGE,WARNING: Applying padding.*\)/#\1/' package/Mak
 echo "==== ELIMINA WARNING SHA-512 DE scripts/ipkg-make-index.sh ===="
 if grep -q "WARNING: Applying padding" scripts/ipkg-make-index.sh; then
     sed -i '/WARNING: Applying padding/d' scripts/ipkg-make-index.sh
+fi
+
+echo "==== VERIFICANDO ARCHIVO usteer2.lua ===="
+if [ ! -f openwrt/package/luci-app-usteer2/usr/lib/lua/luci/controller/usteer2.lua ]; then
+    echo "ERROR: usteer2.lua NO se encuentra en la ruta esperada."
+    exit 1
+else
+    echo "OK: usteer2.lua está presente en la ruta esperada."
 fi
 
 echo "==== 11. COMPILA ===="
