@@ -113,14 +113,6 @@ if grep -q "WARNING: Applying padding" scripts/ipkg-make-index.sh; then
     sed -i '/WARNING: Applying padding/d' scripts/ipkg-make-index.sh
 fi
 
-echo "==== VERIFICANDO ARCHIVO usteer2.lua ===="
-if [ ! -f openwrt/package/luci-app-usteer2/usr/lib/lua/luci/controller/usteer2.lua ]; then
-    echo "ERROR: usteer2.lua NO se encuentra en la ruta esperada."
-    exit 1
-else
-    echo "OK: usteer2.lua está presente en la ruta esperada."
-fi
-
 echo "==== 11. COMPILA ===="
 make -j$(nproc)
 
