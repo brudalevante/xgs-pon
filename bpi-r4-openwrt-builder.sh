@@ -39,7 +39,7 @@ cp -r my_files/999-2764-net-phy-sfp-add-some-FS-copper-SFP-fixes.patch openwrt/t
 # cp -r my_files/99999_tx_power_check_by_dan_pawlik.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/files/package/kernel/mt76/patches/
 
 echo "==== 4b. COPIA TU rpcd.config PERSONALIZADO ===="
-cp -v my_files/rpcd.config openwrt/package/system/rpcd/files/rpcd.config
+cp -v my_files/rpcd.config/rpcd.config openwrt/package/system/rpcd/files/rpcd.config
 
 echo "==== 5. COPIA PAQUETES PERSONALIZADOS ===="
 git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/fakemesh-6g.git tmp_comxwrt
