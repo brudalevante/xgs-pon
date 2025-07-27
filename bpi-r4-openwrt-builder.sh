@@ -38,6 +38,9 @@ cp -r my_files/999-2764-net-phy-sfp-add-some-FS-copper-SFP-fixes.patch openwrt/t
 # Si quieres el de Dan Pawlik, descomenta:
 # cp -r my_files/99999_tx_power_check_by_dan_pawlik.patch mtk-openwrt-feeds/autobuild/unified/filogic/mac80211/24.10/files/package/kernel/mt76/patches/
 
+echo "==== 4b. COPIA TU rpcd.config PERSONALIZADO ===="
+cp -v my_files/rpcd.config openwrt/package/system/rpcd/files/rpcd.config
+
 echo "==== 5. COPIA PAQUETES PERSONALIZADOS ===="
 git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/fakemesh-6g.git tmp_comxwrt
 cp -rv tmp_comxwrt/luci-app-fakemesh openwrt/package/
@@ -94,8 +97,8 @@ grep fakemesh .config      || echo "NO aparece fakemesh en .config"
 grep autoreboot .config    || echo "NO aparece autoreboot en .config"
 grep cpu-status .config    || echo "NO aparece cpu-status en .config"
 grep temp-status .config   || echo "NO aparece temp-status en .config"
-grep dawn2 .config          || echo "NO aparece dawn en .config"
-grep usteer2 .config        || echo "NO aparece usteer en .config"
+grep dawn2 .config         || echo "NO aparece dawn en .config"
+grep usteer2 .config       || echo "NO aparece usteer en .config"
 
 echo "==== 9. AÑADE SEGURIDAD: DESACTIVA PERF EN EL .CONFIG FINAL (por si acaso) ===="
 sed -i '/CONFIG_PACKAGE_perf=y/d' .config
