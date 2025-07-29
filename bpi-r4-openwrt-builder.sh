@@ -3,7 +3,7 @@
 set -e
 
 echo "==== 1. LIMPIEZA ===="
-rm -rf openwrt mtk-openwrt-feeds tmp_comxwrt
+rm -rf openwrt mtk-openwrt-feeds tmp_fakemesh
 
 echo "==== 2. CLONA TUS REPOS PERSONALES ===="
 git clone --branch openwrt-24.10 https://github.com/brudalevante/openwrt.git openwrt || true
@@ -42,13 +42,13 @@ echo "==== 4b. COPIA TU rpcd.config PERSONALIZADO ===="
 cp -v my_files/rpcd.config/rpcd.config openwrt/package/system/rpcd/files/rpcd.config
 
 echo "==== 5. COPIA PAQUETES PERSONALIZADOS ===="
-git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/fakemesh-6g.git tmp_comxwrt
-cp -rv tmp_comxwrt/luci-app-fakemesh openwrt/package/
-cp -rv tmp_comxwrt/luci-app-autoreboot openwrt/package/
-cp -rv tmp_comxwrt/luci-app-cpu-status openwrt/package/
-cp -rv tmp_comxwrt/luci-app-temp-status openwrt/package/
-cp -rv tmp_comxwrt/luci-app-dawn2 openwrt/package/
-cp -rv tmp_comxwrt/luci-app-usteer2 openwrt/package/
+git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/fakemesh-nuevo.git tmp_fakemesh
+cp -rv tmp_fakemesh/luci-app-fakemesh openwrt/package/
+cp -rv tmp_fakemesh/luci-app-autoreboot openwrt/package/
+cp -rv tmp_fakemesh/luci-app-cpu-status openwrt/package/
+cp -rv tmp_fakemesh/luci-app-temp-status openwrt/package/
+cp -rv tmp_fakemesh/luci-app-dawn2 openwrt/package/
+cp -rv tmp_fakemesh/luci-app-usteer2 openwrt/package/
 
 echo "==== 6. ENTRA EN OPENWRT Y USA feeds.conf.default OFICIAL ===="
 cd openwrt
@@ -123,6 +123,6 @@ make -j$(nproc)
 
 echo "==== 12. LIMPIEZA FINAL ===="
 cd ..
-rm -rf tmp_comxwrt
+rm -rf tmp_fakemesh
 
 echo "==== Script finalizado correctamente ===="
