@@ -42,7 +42,7 @@ echo "==== 4b. COPIA TU rpcd.config PERSONALIZADO ===="
 cp -v my_files/rpcd.config/rpcd.config openwrt/package/system/rpcd/files/rpcd.config
 
 echo "==== 5. COPIA PAQUETES PERSONALIZADOS ===="
-git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/fakemesh-nuevo.git tmp_comxwrt
+git clone --depth=1 --single-branch --branch main https://github.com/brudalevante/fakemesh-6g.git tmp_comxwrt
 cp -rv tmp_comxwrt/luci-app-fakemesh openwrt/package/
 cp -rv tmp_comxwrt/luci-app-autoreboot openwrt/package/
 cp -rv tmp_comxwrt/luci-app-cpu-status openwrt/package/
